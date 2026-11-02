@@ -168,6 +168,9 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .linkbtn{background:none;border:none;color:var(--muted);text-decoration:underline;font:inherit;font-size:13px;cursor:pointer;padding:4px}
 .sharebtn{width:100%;margin-top:18px;padding:14px;font-size:16px}
 .namebox .send{margin-top:6px}
+.vsel{font:inherit;font-size:14px;padding:6px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);max-width:min(260px,60vw)}
+.voicesel .round{width:36px;height:36px;font-size:16px}
+.dchk{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-basis:100%}
 </style></head><body>
 <div class="wrap">
   <header class="hero">
@@ -810,7 +813,23 @@ const pbar=r=>`<span class="pg"><span class="pgb"><i style="width:${r.p}%"></i><
 const Wfull=()=>M().words, W=()=>scope==="weak"?Wfull().filter(w=>weak().includes(w[0])):Wfull();
 const key=()=>"stars_"+LIB[fI].name;
 const pic=w=>w[4]&&w[4].startsWith("data:")?`<img src="${w[4]}" alt="">`:(w[4]||M().icon);
-function say(t){try{const u=new SpeechSynthesisUtterance(t.replace(/…/g,""));u.lang="en-US";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+/* ===== Voice: dictionary recordings for single words + best browser voice ===== */
+const GOOD=["natural","online","neural","premium","enhanced","google us english","google uk english female","samantha","ava","allison","susan","zoe","serena","daniel","karen","moira","tessa"];
+const vscore=v=>{const n=v.name.toLowerCase();let sc=0;GOOD.forEach((g,i)=>{if(n.includes(g))sc+=50-i});if(v.lang==="en-US")sc+=6;else if(v.lang==="en-GB")sc+=4;if(v.localService===false)sc+=3;if(/compact|eloquence|zarvox|whisper|bad news|bells|boing|bubbles|cellos|jester|organ|trinoids|albert|fred|junior|ralph|kathy|superstar|wobble|grandma|grandpa|rocko|shelley|flo|eddy|reed|sandy/i.test(n))sc-=100;return sc};
+let VOICES=[];
+function loadVoices(){try{VOICES=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)).filter(v=>vscore(v)>-50).sort((a,b)=>vscore(b)-vscore(a))}catch(e){VOICES=[]}frontBar()}
+try{speechSynthesis.onvoiceschanged=loadVoices}catch(e){}
+setTimeout(loadVoices,300);
+const curVoice=()=>{const n=store.get("voice","");return VOICES.find(v=>v.name===n)||VOICES[0]||null};
+const DICT=store.get("dictAudio",{});
+const dictWord=t=>{const w=t.replace(/\.\.\.|…|\([^)]*\)/g,"").trim().replace(/^(a|an|the)\s+/i,"").toLowerCase();return /^[a-z]+(-[a-z]+)?$/.test(w)?w:null};
+function prefetchDict(words){if(store.get("useDict",true)===false)return;
+  words.map(w=>dictWord(w[0])).filter(w=>w&&!(w in DICT)).slice(0,40).forEach(w=>{
+    fetch("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(w)).then(r=>r.ok?r.json():[]).then(js=>{
+      const a=(Array.isArray(js)?js:[]).flatMap(e=>e.phonetics||[]).map(p=>p.audio).filter(Boolean);
+      DICT[w]=a.find(x=>/-us\.mp3$/.test(x))||a.find(x=>/-uk\.mp3$/.test(x))||a[0]||"";store.set("dictAudio",DICT)}).catch(()=>{})})}
+function tts(t){try{const u=new SpeechSynthesisUtterance(t.replace(/…|\.\.\./g,""));const v=curVoice();if(v){u.voice=v;u.lang=v.lang}else u.lang="en-US";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function say(t){const w=dictWord(t);if(w&&DICT[w]&&store.get("useDict",true)!==false){try{speechSynthesis.cancel();const a=new Audio(DICT[w]);a.play().catch(()=>tts(t));return}catch(e){}}tts(t)}
 const stars=()=>store.get(key(),[]); /* stores English terms */
 const prompt=w=>`<div class="txt"><div class="ru">${w[1]}</div><div class="ex">${w[2]}</div></div><div class="pic">${pic(w)}</div>`;
 const crumbs=()=>`<nav class="crumbs"><button data-go="home">All folders</button>${view!=="home"?` › <button data-go="folder">${LIB[fI].name}</button>`:""}${view==="module"?` › <span>${M().name}</span>`:""}</nav>`;
@@ -855,6 +874,7 @@ function draw(){clearInterval(mt);
     app.innerHTML=crumbs()+`<h2 class="fh">${M().icon} ${M().name}</h2>
     <div class="row" id="scope"></div>
     <div class="row frontsel" id="frontsel"></div>
+    <div class="row frontsel voicesel" id="voicesel"></div>
     <div class="tabs" role="tablist">
       <button class="tab" data-mode="learn" role="tab">🧠 Learn<small>choose the word</small></button>
       <button class="tab" data-mode="cards" role="tab">🃏 Flashcards<small>tap to flip</small></button>
@@ -871,7 +891,7 @@ function draw(){clearInterval(mt);
   }
   window.scrollTo({top:0});
 }
-function runMode(){clearInterval(mt);
+function runMode(){clearInterval(mt);try{prefetchDict(Wfull())}catch(e){}
   document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===mode;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
   scopeBar();frontBar();weakList();order=[];pos=0;flipped=false;onlyStars=false;known=[];unknown=[];hist=[];
   if(mode==="learn")learnStart();else if(mode==="gap")gapStart();else if(mode==="match")matchStart();else if(mode==="build"||mode==="spell"||mode==="test")seqStart(mode);else cards();
@@ -881,7 +901,12 @@ function weakList(){const box=$("weakbox");if(!box)return;const t=weak(),here=Wf
   box.innerHTML=`<div class="wh"><b>📌 Still learning · ${here.length}</b>${here.length?`<button class="btn ghost sm" id="wclear">Clear list</button>`:""}</div>`+(here.length?`<div class="list">${here.map(w=>`<div class="wi"><span><b>${w[0]}</b> <span>— ${w[1]}</span></span><button class="x" data-w="${w[0].replace(/"/g,'&quot;')}" aria-label="I know it now" title="I know it now">✓</button></div>`).join("")}</div>`:`<p class="hint" style="text-align:left;margin:0">Mark words with ✗ in Flashcards, or make a mistake in Learn or Gap fill, and they appear here.</p>`);
   box.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{setWeak(b.dataset.w,false);weakList();scopeBar()});
   if($("wclear"))$("wclear").onclick=()=>{here.forEach(w=>setWeak(w[0],false));weakList();scopeBar()}}
-function frontBar(){const fb=$("frontsel");if(!fb)return;fb.innerHTML=`<span class="lbl">Card front:</span><button class="chip ${front==="ru"?"on":""}" data-fr="ru">RU → EN</button><button class="chip ${front==="en"?"on":""}" data-fr="en">EN → RU</button>${mode==="gap"?`<span class="lbl">(Gap fill is always in English)</span>`:""}`;
+function voiceBar(){const vb=$("voicesel");if(!vb)return;const cv=curVoice();
+  vb.innerHTML=`<span class="lbl">Voice:</span>${VOICES.length?`<select id="vs" class="vsel" aria-label="Voice">${VOICES.map(v=>`<option value="${escA(v.name)}" ${cv&&v.name===cv.name?"selected":""}>${escA(v.name.replace(/^(Microsoft|Google) /,"").replace(/ Online \(Natural\)/," ✨").replace(/ - English.*$/,""))} (${v.lang.slice(3)})</option>`).join("")}</select>`:`<span class="lbl">default</span>`}<button class="round" id="vtest" aria-label="Test the voice">🔊</button><label class="dchk"><input type="checkbox" id="vd" ${store.get("useDict",true)!==false?"checked":""}> 📖 dictionary recordings for single words</label>`;
+  if($("vs"))$("vs").onchange=e=>{store.set("voice",e.target.value)};
+  $("vtest").onclick=()=>tts("Hello! I'm a morning person. I set an alarm for 7 a.m.");
+  $("vd").onchange=e=>{store.set("useDict",e.target.checked);if(e.target.checked&&view==="module")prefetchDict(Wfull())}}
+function frontBar(){voiceBar();const fb=$("frontsel");if(!fb)return;fb.innerHTML=`<span class="lbl">Card front:</span><button class="chip ${front==="ru"?"on":""}" data-fr="ru">RU → EN</button><button class="chip ${front==="en"?"on":""}" data-fr="en">EN → RU</button>${mode==="gap"?`<span class="lbl">(Gap fill is always in English)</span>`:""}`;
   fb.querySelectorAll("[data-fr]").forEach(b=>b.onclick=()=>{front=b.dataset.fr;store.set("front",front);runMode()})}
 function scopeBar(){const n=Wfull().filter(w=>weak().includes(w[0])).length;const sb=$("scope");if(!sb)return;
   sb.innerHTML=`<button class="chip ${scope==="all"?"on":""}" data-sc="all">All words · ${Wfull().length}</button><button class="chip weakchip ${scope==="weak"?"on":""}" data-sc="weak">📌 Still learning · ${n}</button>`;
