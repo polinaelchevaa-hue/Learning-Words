@@ -176,6 +176,7 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .codebox{width:100%;min-height:96px;font-family:ui-monospace,Menlo,monospace;font-size:13px;padding:10px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);word-break:break-all;resize:vertical}
 .done li b,.done .hint b,.done span b{font-size:inherit;font-weight:700}
 .movebox>b{font-size:26px}
+.sync{display:block;color:var(--muted);font-size:12px;font-weight:500}
 </style></head><body>
 <div class="wrap">
   <header class="hero">
@@ -799,7 +800,7 @@ const norm=s=>s.toLowerCase().replace(/[’`]/g,"'").replace(/[.?!…,—-]/g," 
   .replace(/\bi'm\b/g,"i am").replace(/'re\b/g," are").replace(/\b(he|she|it|that|what|who|there|here|name)'s\b/g,"$1 is")
   .replace(/'ll\b/g," will").replace(/'ve\b/g," have").replace(/'d\b/g," would")
   .replace(/\s+/g," ").trim().replace(/^(a|an|the) /,"");
-const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(/^(known|weak|stars|tests)_/.test(k)&&window.syncLater)syncLater()}};
 let view="home",fI=0,mI=0,mode=store.get("mode","cards");
 let CODE="",OK=[];
 function access(){CODE=decodeURIComponent(location.hash.slice(1));if(CODE===TEACHER)store.set("isTeacher",1);OK=CODE===TEACHER?LIB.map((_,i)=>i):((GROUPS[CODE]||{}).folders||[]).filter(i=>LIB[i])}
@@ -812,7 +813,7 @@ const enFront=w=>`<div class="txt"><div class="ru" lang="en">${w[0]}</div></div>
 const ruBack=w=>`<div class="back2"><div class="ru">${w[1]}</div><div class="ex">${filled(w)}</div></div>`;
 const weakKey=()=>"weak_"+LIB[fI].name, weak=()=>store.get(weakKey(),[]);
 const knownKey=()=>"known_"+LIB[fI].name, knownL=()=>store.get(knownKey(),[]);
-const setWeak=(t,on)=>{let a=weak().filter(x=>x!==t);if(on)a.push(t);store.set(weakKey(),a);let k=knownL().filter(x=>x!==t);if(!on)k.push(t);store.set(knownKey(),k)};
+const setWeak=(t,on)=>{const tk="ts_"+LIB[fI].name,ts=store.get(tk,{});ts[t]=Date.now();store.set(tk,ts);let a=weak().filter(x=>x!==t);if(on)a.push(t);store.set(weakKey(),a);let k=knownL().filter(x=>x!==t);if(!on)k.push(t);store.set(knownKey(),k)};
 const prog=(f,words)=>{const k=store.get("known_"+f.name,[]);const n=words.filter(w=>k.includes(w[0])).length;return{n,t:words.length,p:words.length?Math.round(n/words.length*100):0}};
 const pbar=r=>`<span class="pg"><span class="pgb"><i style="width:${r.p}%"></i></span><span class="pgt">✓ ${r.n} / ${r.t}</span></span>`;
 const Wfull=()=>M().words, W=()=>scope==="weak"?Wfull().filter(w=>weak().includes(w[0])):Wfull();
@@ -862,7 +863,7 @@ function draw(){clearInterval(mt);
   const back=T&&CODE?`<a href="#" class="toGroups">← All groups</a>`:"";
   const STU=CODE!==TEACHER&&!!GROUPS[CODE];
   if(STU&&!store.get("myname","")){askName(app);return}
-  const hello=STU?`<div class="hello"><span>👋 Hi, <b>${escA(store.get("myname",""))}</b>!</span><button class="linkbtn" id="chname">change name</button></div>`:"";
+  const hello=STU?`<div class="hello"><span>👋 Hi, <b>${escA(store.get("myname",""))}</b>! ${SYNC_URL?`<small class="sync" id="syncst">${SYNCMSG()}</small>`:""}</span><button class="linkbtn" id="chname">change name</button></div>`:"";
   const shareBtn=STU?`<button class="btn sharebtn" id="share">📤 Share my progress with the teacher</button>${view==="home"?`<div class="movebtns"><button class="btn ghost" id="moveout">📲 Move my progress to another device</button><button class="btn ghost" id="movein">🔑 I have a code</button></div>`:""}`:"";
   if(view==="home"){
     const gname=CODE===TEACHER?"Teacher view: all folders":(GROUPS[CODE].name);
@@ -1131,7 +1132,7 @@ function seqEnd(){const kind=skind,n=SQ.length,p=Math.round(sok/n*100),miss=[...
   ${miss.length?`<span>Words to practise:</span><div class="list" style="width:100%;text-align:left">${miss.map(w=>`<div><b>${w[0]}</b> <span>— ${w[1]}</span></div>`).join("")}</div>`:""}</div>`;
   $("again").onclick=()=>seqStart(kind);
   if(kind!=="test")return;
-  {const k="tests_"+LIB[fI].name,t=store.get(k,{});t[M().name]={s:sok,n,d:new Date().toLocaleDateString("ru-RU")};store.set(k,t)}
+  {const k="tests_"+LIB[fI].name,t=store.get(k,{});t[M().name]={s:sok,n,d:new Date().toLocaleDateString("ru-RU"),ts:Date.now()};store.set(k,t)}
   $("tsend").onclick=()=>{const nm=$("tname").value.trim();if(!nm){note("Write your name first.");$("tname").focus();return}store.set("myname",nm);const d=new Date();
     const txt=`📝 Word Cards test\n${nm}\n${LIB[fI].name} › ${M().name}\nScore: ${sok}/${n} (${p}%)\n${miss.length?"Mistakes: "+miss.map(w=>w[0]).join(", "):"No mistakes! 🌟"}\n${d.toLocaleDateString("ru-RU")} ${d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}`;
     copyTxt(txt);$("tsend").textContent="Copied ✓";
@@ -1142,7 +1143,7 @@ function seqEnd(){const kind=skind,n=SQ.length,p=Math.round(sok/n*100),miss=[...
 function askName(app){app.innerHTML=`<div class="done namebox"><b>Hello! 👋</b><span>What's your name? Your teacher will see it when you share your progress.</span>
   <form class="send" id="nf"><input class="gapin" id="nm" placeholder="Your name" autocomplete="given-name" value="${escA(store.get("myname",""))}"><button class="btn" type="submit">Start →</button></form>
   ${store.get("myname","")?"":`<button class="linkbtn" id="movein">🔑 I already studied on another device — I have a code</button>`}</div>`;
-  $("nf").onsubmit=e=>{e.preventDefault();const v=$("nm").value.trim();if(!v)return;store.set("myname",v);draw()}}
+  $("nf").onsubmit=e=>{e.preventDefault();const v=$("nm").value.trim();if(!v)return;store.set("myname",v);app.innerHTML=`<div class="done"><b>One moment… ☁️</b><span>Looking for your progress</span></div>`;syncPull(true).finally(()=>draw())}}
 function progressText(){const nm=store.get("myname",""),d=new Date(),g=GROUPS[CODE];
   let t=`📊 Word Cards progress\n${nm} · ${g.name}\n${d.toLocaleDateString("ru-RU")} ${d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}\n`;
   OK.forEach(i=>{const f=LIB[i],all=f.modules.flatMap(m=>m.words),r=prog(f,all);
@@ -1193,10 +1194,45 @@ function moveIn(){const app=$("app");
   $("iload").onclick=()=>{let d;try{d=readCode($("icode").value)}catch(e){$("ifb").textContent="Hmm, this code doesn't work. Copy the whole code and try again.";return}
     applyCode(d);app.innerHTML=`<div class="done"><b>Done! ✅</b><span>Your progress is here${d.n?`, ${escA(d.n)}`:""}!</span><button class="btn" id="iok">Let's study →</button></div>`;$("iok").onclick=()=>{view="home";draw()}}}
 document.addEventListener("click",e=>{if(e.target.closest("#moveout"))moveOut();else if(e.target.closest("#movein"))moveIn()});
+
+/* ===== Cloud sync (Google Sheets) ===== */
+const SYNC_URL=window.TEST_SYNC||"";
+let syncState="",syncT=null,pulledAt=0,pushing=false;
+const SYNCMSG=()=>({ok:"☁️ saved",busy:"☁️ saving…",off:"⚠️ offline — saved on this device"})[syncState]||"";
+const setSync=st=>{syncState=st;const el=$("syncst");if(el)el.textContent=SYNCMSG()};
+const syncWho=()=>{const n=store.get("myname","");return SYNC_URL&&GROUPS[CODE]&&n?{g:CODE,n}:null};
+function localData(){const f={};LIB.forEach(F=>{const o={k:store.get("known_"+F.name,[]),w:store.get("weak_"+F.name,[]),ts:store.get("ts_"+F.name,{}),s:store.get("stars_"+F.name,[]),t:store.get("tests_"+F.name,{})};
+  if(o.k.length||o.w.length||o.s.length||Object.keys(o.t).length)f[F.name]=o});return{v:2,name:store.get("myname",""),f}}
+function mergeRemote(r){if(!r||!r.f)return false;let ch=false;if(r.name&&r.name.trim().toLowerCase()===store.get("myname","").trim().toLowerCase())localStorage.setItem("myname",JSON.stringify(r.name));
+  Object.entries(r.f).forEach(([fn,o])=>{const k0=store.get("known_"+fn,[]),w0=store.get("weak_"+fn,[]),t0=store.get("ts_"+fn,{});
+    const st=(k,w,t)=>k.includes(t)?"k":w.includes(t)?"w":"";
+    const terms=new Set([...k0,...w0,...(o.k||[]),...(o.w||[])]);const K=[],Wk=[],TS={...t0};
+    terms.forEach(t=>{const lt=t0[t]||0,rt=(o.ts||{})[t]||0;let v=st(k0,w0,t);
+      if(rt>lt||(!v&&rt>=lt)){const rv=st(o.k||[],o.w||[],t);if(rv!==v){v=rv;ch=true}TS[t]=Math.max(rt,lt)}
+      if(v==="k")K.push(t);else if(v==="w")Wk.push(t)});
+    localStorage.setItem("known_"+fn,JSON.stringify(K));localStorage.setItem("weak_"+fn,JSON.stringify(Wk));localStorage.setItem("ts_"+fn,JSON.stringify(TS));
+    const s0=store.get("stars_"+fn,[]),S=[...new Set([...s0,...(o.s||[])])];if(S.length!==s0.length){ch=true;localStorage.setItem("stars_"+fn,JSON.stringify(S))}
+    const tt=store.get("tests_"+fn,{});Object.entries(o.t||{}).forEach(([m,x])=>{if(!tt[m]||(x.ts||0)>(tt[m].ts||0)){tt[m]=x;ch=true}});localStorage.setItem("tests_"+fn,JSON.stringify(tt))});
+  return ch}
+function syncPayload(){const w=syncWho(),data=localData();let sum=[],wk=[],ts=[];
+  OK.forEach(i=>{const F=LIB[i],r=prog(F,F.modules.flatMap(m=>m.words));sum.push(`${F.name}: ${r.n}/${r.t} (${r.p}%) · `+F.modules.map(m=>{const q=prog(F,m.words);return `${m.name.replace(/^\d+\.\s*/,"")} ${q.n}/${q.t}`}).join(", "));
+    wk.push(...store.get("weak_"+F.name,[]));Object.entries(store.get("tests_"+F.name,{})).forEach(([m,x])=>ts.push(`${m}: ${x.s}/${x.n} (${x.d})`))});
+  return JSON.stringify({g:w.g,n:w.n,summary:sum.join("\n"),weak:wk.length?`${wk.length}: ${wk.join(", ")}`:"—",tests:ts.join("\n"),data})}
+async function syncPull(force){const w=syncWho();if(!w)return;if(!force&&Date.now()-pulledAt<30000)return;pulledAt=Date.now();
+  try{setSync("busy");const r=await fetch(`${SYNC_URL}?g=${encodeURIComponent(w.g)}&n=${encodeURIComponent(w.n)}`).then(x=>x.json());
+    const ch=r&&r.ok&&r.data?mergeRemote(r.data):false;setSync("ok");
+    if(ch&&(view==="home"||view==="folder"))draw();else if(ch&&view==="module"){scopeBar();weakList()}
+    syncPush()}catch(e){setSync("off")}}
+async function syncPush(){clearTimeout(syncT);syncT=null;const w=syncWho();if(!w)return;if(pushing){syncLater();return}pushing=true;
+  try{setSync("busy");const r=await fetch(SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:syncPayload(),keepalive:true}).then(x=>x.json());setSync(r&&r.ok?"ok":"off")}catch(e){setSync("off")}finally{pushing=false}}
+window.syncLater=()=>{if(!syncWho())return;clearTimeout(syncT);syncT=setTimeout(syncPush,4000)};
+function syncFlush(){if(!syncT||!syncWho())return;clearTimeout(syncT);syncT=null;try{navigator.sendBeacon(SYNC_URL,new Blob([syncPayload()],{type:"text/plain;charset=utf-8"}))}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")syncFlush();else syncPull()});
+window.addEventListener("pagehide",syncFlush);
 const saved=store.get("pos",null);
 if(saved&&OK.includes(saved.fI)&&(saved.view!=="module"||saved.mI<0||LIB[saved.fI].modules[saved.mI])){view=saved.view;fI=saved.fI;mI=saved.mI??0}
-window.addEventListener("hashchange",()=>{access();view="home";scope="all";draw()});
-draw();
+window.addEventListener("hashchange",()=>{access();view="home";scope="all";draw();syncPull(true)});
+draw();syncPull(true);
 
 </script>
 </body></html>
