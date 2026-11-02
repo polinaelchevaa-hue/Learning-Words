@@ -154,11 +154,21 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .heard{text-align:center;color:var(--muted);min-height:1.3em;margin:6px 0}
 .send{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%}.send .gapin{width:min(220px,100%);font-size:18px}
 .done .list b{font-size:17px;font-weight:700}
+.slots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:4px 0 14px}
+.slot{width:30px;height:40px;border-bottom:3px solid var(--line);display:flex;align-items:flex-end;justify-content:center;font-size:24px;font-weight:700;padding-bottom:2px}
+.slot.on{border-color:var(--esp)}.slot.fixed{border:none;width:auto;min-width:10px}.sgap{width:14px}
+.slots.ok .slot{border-color:var(--ok);color:var(--ok)}.slots.bad .slot{border-color:var(--bad)}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:6px}
+.tile{width:44px;height:48px;padding:0;font-size:22px}
+.shake{animation:shake .35s;border-color:var(--bad);background:var(--bad-soft)}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.slots{column-gap:16px;row-gap:10px}.sw{display:inline-flex;gap:5px;flex-wrap:nowrap}
+@media (max-width:400px){.slot{width:26px}}
 </style></head><body>
 <div class="wrap">
   <header class="hero">
     <h1>Word Cards</h1>
-    <p class="sub">Choose a folder, then a module. Study in four ways!</p>
+    <p class="sub">Choose a folder and a module. Study the words!</p>
   </header>
   <main id="app"></main>
 </div>
@@ -841,7 +851,7 @@ function draw(){clearInterval(mt);
       <button class="tab" data-mode="gap" role="tab">✍️ Gap fill<small>write the word</small></button>
       <button class="tab" data-mode="match" role="tab">⏱ Match<small>find the pairs</small></button>
       <button class="tab" data-mode="build" role="tab">🧩 Build<small>make the sentence</small></button>
-      <button class="tab" data-mode="say" role="tab">🎤 Say it<small>speak the word</small></button>
+      <button class="tab" data-mode="spell" role="tab">🔤 Spell it<small>put the letters in order</small></button>
       <button class="tab" data-mode="test" role="tab">🏆 Test<small>check yourself</small></button>
     </div><section class="panel" id="panel" aria-live="polite"></section><section class="weakbox" id="weakbox"></section>
     <details><summary>All words in this module</summary><div class="list" style="margin-top:10px">${Wfull().map(w=>`<div><b>${w[0]}</b> <span>— ${w[1]}</span></div>`).join("")}</div></details>`;
@@ -854,7 +864,7 @@ function draw(){clearInterval(mt);
 function runMode(){clearInterval(mt);
   document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===mode;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
   scopeBar();frontBar();weakList();order=[];pos=0;flipped=false;onlyStars=false;known=[];unknown=[];hist=[];
-  if(mode==="learn")learnStart();else if(mode==="gap")gapStart();else if(mode==="match")matchStart();else if(mode==="build"||mode==="say"||mode==="test")seqStart(mode);else cards();
+  if(mode==="learn")learnStart();else if(mode==="gap")gapStart();else if(mode==="match")matchStart();else if(mode==="build"||mode==="spell"||mode==="test")seqStart(mode);else cards();
 }
 function emptyWeak(){$("panel").innerHTML=`<div class="done"><b>Nothing here yet ✨</b><span>Words you mark <b>✗ Still learning</b> or get wrong will appear here.</span><button class="btn" id="toall">Study all words</button></div>`;$("toall").onclick=()=>{scope="all";runMode()}}
 function weakList(){const box=$("weakbox");if(!box)return;const t=weak(),here=Wfull().filter(w=>t.includes(w[0]));
@@ -1042,17 +1052,37 @@ function qSay(w,el,done){
       else $("heard").textContent=e.error==="not-allowed"?"Please allow the microphone for this site and try again.":e.error==="no-speech"?"I didn't hear anything. Try again.":"Something went wrong. Try again."};
     r.onend=()=>m.classList.remove("rec");
     try{r.start()}catch(e){m.classList.remove("rec")}}}
+/* Spell it */
+const spellTarget=w=>{let t=w[0].split(/\s*\/\s*/)[0].replace(/\.\.\.|…|\([^)]*\)/g,"").trim().replace(/^(a|an|the)\s+/i,"");
+  if(t.includes("___"))t=w[3].split("|")[0];return t};
+const spellable=w=>{const t=spellTarget(w);return t.replace(/[^a-z]/gi,"").length<=16};
+function qSpell(w,el,done){
+  const t=spellTarget(w),chars=[...t],need=chars.map((c,i)=>/[a-z]/i.test(c)?i:-1).filter(i=>i>=0);
+  let tiles=shuffle(need.map(i=>chars[i].toLowerCase())),used=tiles.map(()=>false),got=0,miss=0,fin=false;
+  const render=()=>{
+    let k=0;const slots=`<span class="sw">`+chars.map((c,i)=>{if(!/[a-z]/i.test(c))return c===" "?`</span><span class="sw">`:`<span class="slot fixed">${c}</span>`;const j=k++;return `<span class="slot ${j<got?"on":""}">${j<got?chars[i]:""}</span>`}).join("")+`</span>`;
+    el.innerHTML=`<div class="card" style="cursor:default"><div class="txt"><div class="ru">${w[1]}</div></div><div class="pic">${pic(w)}</div></div>
+    <p class="hint">${fin?"":"Tap the letters in the right order"}</p><div class="slots ${fin?(miss?"bad":"ok"):""}">${slots}</div>
+    ${fin?`<div class="fb ${miss?"bad":"ok"}">${miss?"The word is:":"Correct! ✨"}<div class="full"><span class="term">${w[0]} — ${w[1]}</span></div></div>`:`<div class="tiles">${tiles.map((c,i)=>`<button class="tok tile ${used[i]?"gone":""}" data-t="${i}" ${used[i]?"disabled":""}>${c}</button>`).join("")}</div><div class="fb bad" id="spfb">${miss?`Mistakes: ${miss}`:""}</div>`}
+    <div class="nav"><button class="round" id="spk" aria-label="Listen">🔊</button>${fin?`<button class="btn" id="snx">Next →</button>`:`<button class="btn ghost" id="sska">Show answer</button>`}</div>`;
+    $("spk").onclick=()=>say(t);
+    if(fin){$("snx").onclick=()=>done(!miss);return}
+    $("sska").onclick=()=>{miss=Math.max(miss,1);got=need.length;fin=true;markW(w,false);render()};
+    el.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{const i=+b.dataset.t;
+      if(tiles[i]===chars[need[got]].toLowerCase()){used[i]=true;got++;if(got===need.length){fin=true;markW(w,!miss)}render()}
+      else{miss++;b.classList.add("shake");setTimeout(()=>b.classList.remove("shake"),400);$("spfb").textContent=`Mistakes: ${miss}`}});
+  };render()}
 /* runner */
 let SQ=[],sp=0,sok=0,SW=[],smiss=[],skind="";
 function seqStart(kind){if(!W().length){emptyWeak();return}skind=kind;SW=W().slice();
   let idx=shuffle(SW.map((_,i)=>i));
-  if(kind==="test"){idx=idx.slice(0,Math.min(12,idx.length));const types=["choice","write","build"];SQ=idx.map((i,j)=>({i,t:types[j%3]}));SQ=shuffle(SQ)}
-  else SQ=idx.map(i=>({i,t:kind}));
+  if(kind==="test"){idx=idx.slice(0,Math.min(12,idx.length));const types=["choice","write","build","spell"];SQ=idx.map((i,j)=>{let t=types[j%4];if(t==="spell"&&!spellable(SW[i]))t="choice";return{i,t}});SQ=shuffle(SQ)}
+  else{if(kind==="spell")idx=idx.filter(i=>spellable(SW[i]));SQ=idx.map(i=>({i,t:kind}))}
   sp=0;sok=0;smiss=[];seq()}
 function seq(){if(sp>=SQ.length){seqEnd();return}
   const {i,t}=SQ[sp],w=SW[i],kind=skind;
   $("panel").innerHTML=`${kind==="test"?`<p class="gname" style="text-align:center">🏆 Test</p>`:""}<div class="bar"><i style="width:${sp/SQ.length*100}%"></i></div><p class="hint">${sp+1} / ${SQ.length} · correct: ${sok}</p><div id="qbox" class="qbox"></div>`;
-  ({choice:qChoice,write:qWrite,build:qBuild,say:qSay})[t](w,$("qbox"),ok=>{if(skind!==kind||mode!==kind)return;if(ok)sok++;else smiss.push(w);sp++;seq()})}
+  ({choice:qChoice,write:qWrite,build:qBuild,say:qSay,spell:qSpell})[t](w,$("qbox"),ok=>{if(skind!==kind||mode!==kind)return;if(ok)sok++;else smiss.push(w);sp++;seq()})}
 function seqEnd(){const kind=skind,n=SQ.length,p=Math.round(sok/n*100),miss=[...new Set(smiss)];
   const msg=p===100?"Perfect! 🌟":p>=80?"Great job! 💪":p>=50?"Good try! Practise the words below.":"Keep practising — you can do it! 💛";
   $("panel").innerHTML=`<div class="done"><b>${kind==="test"?"Your result: ":""}${sok} / ${n}</b><span>${msg}</span>
