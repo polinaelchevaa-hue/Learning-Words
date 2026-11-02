@@ -171,6 +171,11 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .vsel{font:inherit;font-size:14px;padding:6px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);max-width:min(260px,60vw)}
 .voicesel .round{width:36px;height:36px;font-size:16px}
 .dchk{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-basis:100%}
+.movebtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.movebtns .btn{flex:1 1 220px;font-size:14px}
+.movebox{gap:14px}.steps{text-align:left;margin:0;padding-left:20px;line-height:1.5}
+.codebox{width:100%;min-height:96px;font-family:ui-monospace,Menlo,monospace;font-size:13px;padding:10px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);word-break:break-all;resize:vertical}
+.done li b,.done .hint b,.done span b{font-size:inherit;font-weight:700}
+.movebox>b{font-size:26px}
 </style></head><body>
 <div class="wrap">
   <header class="hero">
@@ -858,7 +863,7 @@ function draw(){clearInterval(mt);
   const STU=CODE!==TEACHER&&!!GROUPS[CODE];
   if(STU&&!store.get("myname","")){askName(app);return}
   const hello=STU?`<div class="hello"><span>👋 Hi, <b>${escA(store.get("myname",""))}</b>!</span><button class="linkbtn" id="chname">change name</button></div>`:"";
-  const shareBtn=STU?`<button class="btn sharebtn" id="share">📤 Share my progress with the teacher</button>`:"";
+  const shareBtn=STU?`<button class="btn sharebtn" id="share">📤 Share my progress with the teacher</button>${view==="home"?`<div class="movebtns"><button class="btn ghost" id="moveout">📲 Move my progress to another device</button><button class="btn ghost" id="movein">🔑 I have a code</button></div>`:""}`:"";
   if(view==="home"){
     const gname=CODE===TEACHER?"Teacher view: all folders":(GROUPS[CODE].name);
     app.innerHTML=back+hello+`<p class="gname">${gname}</p><div class="grid">${OK.map(i=>{const f=LIB[i];return `<button class="tile" data-f="${i}"><span class="ic">${f.icon}</span><b>${f.name}</b><small>${f.modules.length} modules · ${f.modules.reduce((n,m)=>n+m.words.length,0)} words</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</button>`}).join("")}</div>`+(CODE===TEACHER?`<section class="glinks"><b>Group links</b><p class="hint" style="text-align:left;margin:0">Add the code to the end of the page link and send it to the group. Each group sees only its own folders.</p>${Object.entries(GROUPS).map(([c,g])=>`<div class="gl"><span><b>${g.name}</b><small>${g.folders.map(i=>LIB[i]?LIB[i].name:"").join(", ")}</small></span><a href="#${c}" class="code">#${c}</a></div>`).join("")}<div class="gl"><span><b>You (teacher)</b><small>all folders</small></span><a href="#${TEACHER}" class="code">#${TEACHER}</a></div></section>`:"");
@@ -1135,7 +1140,8 @@ function seqEnd(){const kind=skind,n=SQ.length,p=Math.round(sok/n*100),miss=[...
 
 /* ===== Student name + share progress ===== */
 function askName(app){app.innerHTML=`<div class="done namebox"><b>Hello! 👋</b><span>What's your name? Your teacher will see it when you share your progress.</span>
-  <form class="send" id="nf"><input class="gapin" id="nm" placeholder="Your name" autocomplete="given-name" value="${escA(store.get("myname",""))}"><button class="btn" type="submit">Start →</button></form></div>`;
+  <form class="send" id="nf"><input class="gapin" id="nm" placeholder="Your name" autocomplete="given-name" value="${escA(store.get("myname",""))}"><button class="btn" type="submit">Start →</button></form>
+  ${store.get("myname","")?"":`<button class="linkbtn" id="movein">🔑 I already studied on another device — I have a code</button>`}</div>`;
   $("nf").onsubmit=e=>{e.preventDefault();const v=$("nm").value.trim();if(!v)return;store.set("myname",v);draw()}}
 function progressText(){const nm=store.get("myname",""),d=new Date(),g=GROUPS[CODE];
   let t=`📊 Word Cards progress\n${nm} · ${g.name}\n${d.toLocaleDateString("ru-RU")} ${d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}\n`;
@@ -1152,6 +1158,41 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("#share");if(!b)return;const txt=progressText();copyTxt(txt);b.textContent="Copied ✓ Paste it in the chat with your teacher";
   setTimeout(()=>{b.textContent="📤 Share my progress with the teacher"},3500);
   if(navigator.share&&/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent))navigator.share({text:txt}).catch(()=>{})});
+
+/* ===== Move progress between devices ===== */
+const folderTerms=f=>[...new Set(f.modules.flatMap(m=>m.words.map(w=>w[0])))];
+function makeCode(){const d={v:1,n:store.get("myname",""),f:{}};
+  LIB.forEach((f,i)=>{const T=folderTerms(f),o={};
+    [["known","k"],["weak","w"],["stars","s"]].forEach(([k,c])=>{const a=store.get(k+"_"+f.name,[]).map(t=>T.indexOf(t)).filter(x=>x>=0);if(a.length)o[c]=a.map(x=>x.toString(36)).join(".")});
+    const t=store.get("tests_"+f.name,null);if(t&&Object.keys(t).length)o.t=t;
+    if(Object.keys(o).length)d.f[i]=o});
+  return "WC1-"+btoa(unescape(encodeURIComponent(JSON.stringify(d)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function readCode(c){c=c.trim().replace(/\s+/g,"");if(!/^WC1-/i.test(c))throw new Error("bad");let b=c.slice(4).replace(/-/g,"+").replace(/_/g,"/");while(b.length%4)b+="=";
+  const d=JSON.parse(decodeURIComponent(escape(atob(b))));if(!d||d.v!==1||typeof d.f!=="object")throw new Error("bad");return d}
+function applyCode(d){if(d.n)store.set("myname",d.n);
+  Object.entries(d.f).forEach(([i,o])=>{const f=LIB[+i];if(!f)return;const T=folderTerms(f),dec=x=>x?x.split(".").map(y=>T[parseInt(y,36)]).filter(Boolean):[];
+    const K=dec(o.k),Wk=dec(o.w),S=dec(o.s);
+    const known=store.get("known_"+f.name,[]).filter(t=>!Wk.includes(t)),weak=store.get("weak_"+f.name,[]).filter(t=>!K.includes(t));
+    store.set("known_"+f.name,[...new Set([...known,...K])]);store.set("weak_"+f.name,[...new Set([...weak,...Wk])]);
+    store.set("stars_"+f.name,[...new Set([...store.get("stars_"+f.name,[]),...S])]);
+    if(o.t)store.set("tests_"+f.name,Object.assign(store.get("tests_"+f.name,{}),o.t))})}
+function moveOut(){const c=makeCode(),app=$("app");
+  app.innerHTML=`<div class="done movebox"><b>📲 Move your progress</b>
+  <ol class="steps"><li>Copy this code and send it to yourself — for example, to <i>Saved Messages</i> in Telegram.</li><li>On your other device, open the same link and tap <b>🔑 I have a code</b>.</li></ol>
+  <textarea class="codebox" id="mcode" readonly>${c}</textarea>
+  <div class="nav"><button class="btn" id="mcopy">Copy the code</button><button class="btn ghost" id="mback">← Back</button></div>
+  <p class="hint" style="margin:0">The code saves your progress <b>right now</b>. If you study more on this device, make a new code.</p></div>`;
+  $("mcode").onclick=e=>e.target.select();
+  $("mcopy").onclick=()=>{copyTxt(c);$("mcopy").textContent="Copied ✓";if(navigator.share&&/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent))navigator.share({text:c}).catch(()=>{})};
+  $("mback").onclick=()=>draw()}
+function moveIn(){const app=$("app");
+  app.innerHTML=`<div class="done movebox"><b>🔑 I have a code</b><span>Paste the code from your other device. Your words, “Still learning” list, stars and test results will appear here.</span>
+  <textarea class="codebox" id="icode" placeholder="WC1-…"></textarea><div class="fb bad" id="ifb"></div>
+  <div class="nav"><button class="btn" id="iload">Load my progress</button><button class="btn ghost" id="iback">← Back</button></div></div>`;
+  $("iback").onclick=()=>draw();
+  $("iload").onclick=()=>{let d;try{d=readCode($("icode").value)}catch(e){$("ifb").textContent="Hmm, this code doesn't work. Copy the whole code and try again.";return}
+    applyCode(d);app.innerHTML=`<div class="done"><b>Done! ✅</b><span>Your progress is here${d.n?`, ${escA(d.n)}`:""}!</span><button class="btn" id="iok">Let's study →</button></div>`;$("iok").onclick=()=>{view="home";draw()}}}
+document.addEventListener("click",e=>{if(e.target.closest("#moveout"))moveOut();else if(e.target.closest("#movein"))moveIn()});
 const saved=store.get("pos",null);
 if(saved&&OK.includes(saved.fI)&&(saved.view!=="module"||saved.mI<0||LIB[saved.fI].modules[saved.mI])){view=saved.view;fI=saved.fI;mI=saved.mI??0}
 window.addEventListener("hashchange",()=>{access();view="home";scope="all";draw()});
