@@ -164,6 +164,10 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .slots{column-gap:16px;row-gap:10px}.sw{display:inline-flex;gap:5px;flex-wrap:nowrap}
 @media (max-width:400px){.slot{width:26px}}
+.hello{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:16px}
+.linkbtn{background:none;border:none;color:var(--muted);text-decoration:underline;font:inherit;font-size:13px;cursor:pointer;padding:4px}
+.sharebtn{width:100%;margin-top:18px;padding:14px;font-size:16px}
+.namebox .send{margin-top:6px}
 </style></head><body>
 <div class="wrap">
   <header class="hero">
@@ -832,13 +836,19 @@ function draw(){clearInterval(mt);
   if(!OK.length){app.innerHTML=`<div class="done locked"><b>Hello! 👋</b><span>Please open the link your teacher sent you.</span></div>`;return}
   if(!OK.includes(fI)){fI=OK[0];view="home"}
   const back=T&&CODE?`<a href="#" class="toGroups">← All groups</a>`:"";
+  const STU=CODE!==TEACHER&&!!GROUPS[CODE];
+  if(STU&&!store.get("myname","")){askName(app);return}
+  const hello=STU?`<div class="hello"><span>👋 Hi, <b>${escA(store.get("myname",""))}</b>!</span><button class="linkbtn" id="chname">change name</button></div>`:"";
+  const shareBtn=STU?`<button class="btn sharebtn" id="share">📤 Share my progress with the teacher</button>`:"";
   if(view==="home"){
     const gname=CODE===TEACHER?"Teacher view: all folders":(GROUPS[CODE].name);
-    app.innerHTML=back+`<p class="gname">${gname}</p><div class="grid">${OK.map(i=>{const f=LIB[i];return `<button class="tile" data-f="${i}"><span class="ic">${f.icon}</span><b>${f.name}</b><small>${f.modules.length} modules · ${f.modules.reduce((n,m)=>n+m.words.length,0)} words</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</button>`}).join("")}</div>`+(CODE===TEACHER?`<section class="glinks"><b>Group links</b><p class="hint" style="text-align:left;margin:0">Add the code to the end of the page link and send it to the group. Each group sees only its own folders.</p>${Object.entries(GROUPS).map(([c,g])=>`<div class="gl"><span><b>${g.name}</b><small>${g.folders.map(i=>LIB[i]?LIB[i].name:"").join(", ")}</small></span><a href="#${c}" class="code">#${c}</a></div>`).join("")}<div class="gl"><span><b>You (teacher)</b><small>all folders</small></span><a href="#${TEACHER}" class="code">#${TEACHER}</a></div></section>`:"");
+    app.innerHTML=back+hello+`<p class="gname">${gname}</p><div class="grid">${OK.map(i=>{const f=LIB[i];return `<button class="tile" data-f="${i}"><span class="ic">${f.icon}</span><b>${f.name}</b><small>${f.modules.length} modules · ${f.modules.reduce((n,m)=>n+m.words.length,0)} words</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</button>`}).join("")}</div>`+(CODE===TEACHER?`<section class="glinks"><b>Group links</b><p class="hint" style="text-align:left;margin:0">Add the code to the end of the page link and send it to the group. Each group sees only its own folders.</p>${Object.entries(GROUPS).map(([c,g])=>`<div class="gl"><span><b>${g.name}</b><small>${g.folders.map(i=>LIB[i]?LIB[i].name:"").join(", ")}</small></span><a href="#${c}" class="code">#${c}</a></div>`).join("")}<div class="gl"><span><b>You (teacher)</b><small>all folders</small></span><a href="#${TEACHER}" class="code">#${TEACHER}</a></div></section>`:"");
+    if(STU)app.insertAdjacentHTML("beforeend",shareBtn);
     document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{fI=+b.dataset.f;view="folder";draw()});
   } else if(view==="folder"){
     const f=LIB[fI];
     app.innerHTML=crumbs()+`<h2 class="fh">${f.icon} ${f.name}</h2>${weak().length?`<button class="review weakrev" data-m="-1" data-sc="weak"><span class="ic">📌</span><span><b>Still learning · ${weak().length}</b><small>Practise only the words you don't know yet, from all modules</small></span><span class="go">→</span></button>`:""}<button class="review" data-m="-1"><span class="ic">🔁</span><span><b>Review the whole folder</b><small>All ${f.modules.reduce((n,m)=>n+m.words.length,0)} words from every module, mixed</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</span><span class="go">→</span></button><div class="mods">${f.modules.map((m,i)=>`<button class="mod" data-m="${i}"><span class="ic">${m.icon}</span><span><b>${m.name}</b><small>Module · ${m.words.length} words</small>${pbar(prog(f,m.words))}</span><span class="go">→</span></button>`).join("")}</div>`;
+    if(STU)app.insertAdjacentHTML("beforeend",shareBtn);
     bindCrumbs();
     document.querySelectorAll(".mods [data-m], .review").forEach(b=>b.onclick=()=>{mI=+b.dataset.m;view="module";scope=b.dataset.sc||"all";draw()});
   } else {
@@ -1091,11 +1101,32 @@ function seqEnd(){const kind=skind,n=SQ.length,p=Math.round(sok/n*100),miss=[...
   ${miss.length?`<span>Words to practise:</span><div class="list" style="width:100%;text-align:left">${miss.map(w=>`<div><b>${w[0]}</b> <span>— ${w[1]}</span></div>`).join("")}</div>`:""}</div>`;
   $("again").onclick=()=>seqStart(kind);
   if(kind!=="test")return;
+  {const k="tests_"+LIB[fI].name,t=store.get(k,{});t[M().name]={s:sok,n,d:new Date().toLocaleDateString("ru-RU")};store.set(k,t)}
   $("tsend").onclick=()=>{const nm=$("tname").value.trim();if(!nm){note("Write your name first.");$("tname").focus();return}store.set("myname",nm);const d=new Date();
     const txt=`📝 Word Cards test\n${nm}\n${LIB[fI].name} › ${M().name}\nScore: ${sok}/${n} (${p}%)\n${miss.length?"Mistakes: "+miss.map(w=>w[0]).join(", "):"No mistakes! 🌟"}\n${d.toLocaleDateString("ru-RU")} ${d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}`;
     copyTxt(txt);$("tsend").textContent="Copied ✓";
     if(navigator.share&&/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent))navigator.share({text:txt}).catch(()=>{});
     else note("Copied! Now paste it in the chat with your teacher.")}}
+
+/* ===== Student name + share progress ===== */
+function askName(app){app.innerHTML=`<div class="done namebox"><b>Hello! 👋</b><span>What's your name? Your teacher will see it when you share your progress.</span>
+  <form class="send" id="nf"><input class="gapin" id="nm" placeholder="Your name" autocomplete="given-name" value="${escA(store.get("myname",""))}"><button class="btn" type="submit">Start →</button></form></div>`;
+  $("nf").onsubmit=e=>{e.preventDefault();const v=$("nm").value.trim();if(!v)return;store.set("myname",v);draw()}}
+function progressText(){const nm=store.get("myname",""),d=new Date(),g=GROUPS[CODE];
+  let t=`📊 Word Cards progress\n${nm} · ${g.name}\n${d.toLocaleDateString("ru-RU")} ${d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}\n`;
+  OK.forEach(i=>{const f=LIB[i],all=f.modules.flatMap(m=>m.words),r=prog(f,all);
+    t+=`\n📁 ${f.name}: ${r.n}/${r.t} words ✓ (${r.p}%)\n`;
+    f.modules.forEach(m=>{const q=prog(f,m.words);t+=`• ${m.name}: ${q.n}/${q.t}\n`});
+    const tests=store.get("tests_"+f.name,{}),tk=Object.keys(tests);
+    if(tk.length)t+=`📝 Tests: ${tk.map(k=>`${k} — ${tests[k].s}/${tests[k].n} (${tests[k].d})`).join("; ")}\n`;
+    const wk=store.get("weak_"+f.name,[]);
+    t+=wk.length?`📌 Still learning (${wk.length}): ${wk.slice(0,15).join(", ")}${wk.length>15?"…":""}\n`:`📌 Still learning: none 🌟\n`});
+  return t.trim()}
+document.addEventListener("click",e=>{
+  if(e.target.closest("#chname")){askName($("app"));return}
+  const b=e.target.closest("#share");if(!b)return;const txt=progressText();copyTxt(txt);b.textContent="Copied ✓ Paste it in the chat with your teacher";
+  setTimeout(()=>{b.textContent="📤 Share my progress with the teacher"},3500);
+  if(navigator.share&&/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent))navigator.share({text:txt}).catch(()=>{})});
 const saved=store.get("pos",null);
 if(saved&&OK.includes(saved.fI)&&(saved.view!=="module"||saved.mI<0||LIB[saved.fI].modules[saved.mI])){view=saved.view;fI=saved.fI;mI=saved.mI??0}
 window.addEventListener("hashchange",()=>{access();view="home";scope="all";draw()});
