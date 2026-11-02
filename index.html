@@ -864,7 +864,7 @@ function draw(){clearInterval(mt);
   const STU=CODE!==TEACHER&&!!GROUPS[CODE];
   if(STU&&!store.get("myname","")){askName(app);return}
   const hello=STU?`<div class="hello"><span>👋 Hi, <b>${escA(store.get("myname",""))}</b>! ${SYNC_URL?`<small class="sync" id="syncst">${SYNCMSG()}</small>`:""}</span><button class="linkbtn" id="chname">change name</button></div>`:"";
-  const shareBtn=STU?`<button class="btn sharebtn" id="share">📤 Share my progress with the teacher</button>${view==="home"?`<div class="movebtns"><button class="btn ghost" id="moveout">📲 Move my progress to another device</button><button class="btn ghost" id="movein">🔑 I have a code</button></div>`:""}`:"";
+  const shareBtn=STU?`<button class="btn sharebtn" id="share">📤 Share my progress with the teacher</button>`:"";
   if(view==="home"){
     const gname=CODE===TEACHER?"Teacher view: all folders":(GROUPS[CODE].name);
     app.innerHTML=back+hello+`<p class="gname">${gname}</p><div class="grid">${OK.map(i=>{const f=LIB[i];return `<button class="tile" data-f="${i}"><span class="ic">${f.icon}</span><b>${f.name}</b><small>${f.modules.length} modules · ${f.modules.reduce((n,m)=>n+m.words.length,0)} words</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</button>`}).join("")}</div>`+(CODE===TEACHER?`<section class="glinks"><b>Group links</b><p class="hint" style="text-align:left;margin:0">Add the code to the end of the page link and send it to the group. Each group sees only its own folders.</p>${Object.entries(GROUPS).map(([c,g])=>`<div class="gl"><span><b>${g.name}</b><small>${g.folders.map(i=>LIB[i]?LIB[i].name:"").join(", ")}</small></span><a href="#${c}" class="code">#${c}</a></div>`).join("")}<div class="gl"><span><b>You (teacher)</b><small>all folders</small></span><a href="#${TEACHER}" class="code">#${TEACHER}</a></div></section>`:"");
@@ -1140,9 +1140,8 @@ function seqEnd(){const kind=skind,n=SQ.length,p=Math.round(sok/n*100),miss=[...
     else note("Copied! Now paste it in the chat with your teacher.")}}
 
 /* ===== Student name + share progress ===== */
-function askName(app){app.innerHTML=`<div class="done namebox"><b>Hello! 👋</b><span>What's your name? Your teacher will see it when you share your progress.</span>
-  <form class="send" id="nf"><input class="gapin" id="nm" placeholder="Your name" autocomplete="given-name" value="${escA(store.get("myname",""))}"><button class="btn" type="submit">Start →</button></form>
-  ${store.get("myname","")?"":`<button class="linkbtn" id="movein">🔑 I already studied on another device — I have a code</button>`}</div>`;
+function askName(app){app.innerHTML=`<div class="done namebox"><b>Hello! 👋</b><span>What's your name? Write it the same way on every device — your progress will be saved automatically.</span>
+  <form class="send" id="nf"><input class="gapin" id="nm" placeholder="Your name" autocomplete="given-name" value="${escA(store.get("myname",""))}"><button class="btn" type="submit">Start →</button></form></div>`;
   $("nf").onsubmit=e=>{e.preventDefault();const v=$("nm").value.trim();if(!v)return;store.set("myname",v);app.innerHTML=`<div class="done"><b>One moment… ☁️</b><span>Looking for your progress</span></div>`;syncPull(true).finally(()=>draw())}}
 function progressText(){const nm=store.get("myname",""),d=new Date(),g=GROUPS[CODE];
   let t=`📊 Word Cards progress\n${nm} · ${g.name}\n${d.toLocaleDateString("ru-RU")} ${d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}\n`;
