@@ -136,6 +136,9 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .glink code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--muted);background:var(--bg,#f5f0e6);border-radius:10px;padding:8px 10px}
 .copy{flex:none;border:1.5px solid var(--ink,#3e2723);background:transparent;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:inherit}
 .toGroups{display:inline-block;margin-bottom:10px;font-weight:600;color:var(--muted);text-decoration:none;font-size:14px}
+.bsw{justify-content:center;margin-bottom:10px}
+.kbtn:not(.k):not(.u){border-color:var(--line);background:var(--paper);color:var(--ink)}
+.kbtn:disabled{opacity:.4;cursor:default}
 </style></head><body>
 <div class="wrap">
   <header class="hero">
@@ -848,11 +851,12 @@ function scopeBar(){const n=Wfull().filter(w=>weak().includes(w[0])).length;cons
 function note(t){const p=document.createElement("p");p.className="fb bad";p.textContent=t;$("panel").appendChild(p);setTimeout(()=>p.remove(),2200)}
 
 /* Flashcards: sort into know / still learning */
-let order=[],pos=0,flipped=false,onlyStars=false,known=[],unknown=[],hist=[],RW=[];
+let browse=store.get("browse",false),order=[],pos=0,flipped=false,onlyStars=false,known=[],unknown=[],hist=[],RW=[];
 function cardsNew(list){RW=W().slice();order=list;pos=0;flipped=false;known=[];unknown=[];hist=[]}
 function cards(){
   const st=stars();
   if(!order.length){if(!W().length){emptyWeak();return}let pool=W().map((_,i)=>i);if(onlyStars&&st.length)pool=pool.filter(i=>st.includes(W()[i][0]));cardsNew(mI<0?shuffle(pool):pool)}
+  if(browse&&pos>=order.length)pos=0;
   if(pos>=order.length){
     $("panel").innerHTML=`<div class="done"><b>Round finished! 🎉</b>
     <div class="sort"><span class="k">✓ Know: ${known.length}</span><span class="u">✗ Still learning: ${unknown.length}</span></div>
@@ -861,22 +865,33 @@ function cards(){
     if(unknown.length)$("again2").onclick=()=>{cardsNew(shuffle(unknown.slice()));cards()};
     $("restart").onclick=()=>{order=[];cards()};return}
   const i=order[pos],w=RW[i];
-  $("panel").innerHTML=`<div class="sort"><span class="u">✗ ${unknown.length}</span><span class="count">${pos+1} / ${order.length}</span><span class="k">✓ ${known.length}</span></div>
+  const modeSw=`<div class="row bsw"><button class="chip ${browse?"on":""}" data-b="1">👀 Flip through</button><button class="chip ${browse?"":"on"}" data-b="0">✓ ✗ Sort</button></div>`;
+  $("panel").innerHTML=modeSw+(browse?`<div class="sort"><span></span><span class="count">${pos+1} / ${order.length}</span><span></span></div>`:`<div class="sort"><span class="u">✗ ${unknown.length}</span><span class="count">${pos+1} / ${order.length}</span><span class="k">✓ ${known.length}</span></div>`)+`
   <button class="card" id="flip" aria-label="Flip the card">${front==="en"?(flipped?ruBack(w):enFront(w)):(flipped?`<div class="back">${w[0]}</div>`:prompt(w))}</button>
   <p class="hint">${flipped?"Tap to see the front again":front==="en"?"Tap the card to see the translation":"Tap the card to see the English word"}</p>
-  <div class="nav"><button class="kbtn u" id="no">✗ Still learning</button><button class="kbtn k" id="yes">✓ I know it</button></div>
-  <div class="nav"><button class="round" id="undo" aria-label="Back" ${hist.length?"":"disabled"}>↶</button><button class="round" id="speak" aria-label="Listen">🔊</button><button class="round star ${st.includes(w[0])?"on":""}" id="star" aria-label="Star this word">★</button>
+  ${browse?`<div class="nav"><button class="kbtn" id="prev" ${pos?"":"disabled"}>← Back</button><button class="kbtn" id="next">${pos===order.length-1?"Start again ↺":"Next →"}</button></div>`:`<div class="nav"><button class="kbtn u" id="no">✗ Still learning</button><button class="kbtn k" id="yes">✓ I know it</button></div>`}
+  <div class="nav">${browse?"":`<button class="round" id="undo" aria-label="Back" ${hist.length?"":"disabled"}>↶</button>`}<button class="round" id="speak" aria-label="Listen">🔊</button><button class="round star ${st.includes(w[0])?"on":""}" id="star" aria-label="Star this word">★</button>
   <button class="btn ghost" id="mix">Shuffle</button><button class="btn ghost" id="onlyst">${onlyStars?"All words":"Only ★ words"}</button></div>`;
   $("flip").onclick=()=>{flipped=!flipped;cards()};
   if(front==="en"&&!flipped&&!cards.spoke){cards.spoke=1;setTimeout(()=>cards.spoke=0,50)}
   const mark=k=>{(k?known:unknown).push(i);setWeak(w[0],!k);weakList();scopeBar();hist.push(k);pos++;flipped=false;cards()};
+  document.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{browse=b.dataset.b==="1";store.set("browse",browse);order=[];cards()});
+  const go=d=>{pos=Math.max(0,pos+d);flipped=false;cards()};
+  cards.go=browse?go:null;
+  if(browse){$("prev").onclick=()=>go(-1);$("next").onclick=()=>go(1);
+    const c=$("flip");let x0=null;c.addEventListener("touchstart",e=>{x0=e.touches[0].clientX},{passive:true});
+    c.addEventListener("touchend",e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>50){e.preventDefault();go(dx<0?1:(pos?-1:0))}});
+    rest();return}
   $("yes").onclick=()=>mark(true);$("no").onclick=()=>mark(false);
   $("undo").onclick=()=>{if(!hist.length)return;const k=hist.pop();(k?known:unknown).pop();pos--;flipped=false;cards()};
+  rest();
+  function rest(){
   $("speak").onclick=()=>say(w[0]);
   $("star").onclick=()=>{let s=stars();s=s.includes(w[0])?s.filter(x=>x!==w[0]):[...s,w[0]];store.set(key(),s);cards()};
   $("mix").onclick=()=>{cardsNew(shuffle(order.slice()));cards()};
-  $("onlyst").onclick=()=>{if(!onlyStars&&!stars().length){note("Tap ★ on some cards first.");return}onlyStars=!onlyStars;order=[];cards()};
+  $("onlyst").onclick=()=>{if(!onlyStars&&!stars().length){note("Tap ★ on some cards first.");return}onlyStars=!onlyStars;order=[];cards()};}
 }
+document.addEventListener("keydown",e=>{if(view==="module"&&mode==="cards"&&cards.go&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){if(e.key==="ArrowRight")cards.go(1);else if(e.key==="ArrowLeft"&&pos)cards.go(-1)}});
 /* Learn */
 let q=[],learned=0,total=0,LW=[];
 function learnStart(){if(!W().length){emptyWeak();return}LW=W().slice();q=shuffle(LW.map((_,i)=>i));learned=0;total=q.length;learn()}
