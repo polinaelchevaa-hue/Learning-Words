@@ -1196,7 +1196,7 @@ function moveIn(){const app=$("app");
 document.addEventListener("click",e=>{if(e.target.closest("#moveout"))moveOut();else if(e.target.closest("#movein"))moveIn()});
 
 /* ===== Cloud sync (Google Sheets) ===== */
-const SYNC_URL=window.TEST_SYNC||"";
+const SYNC_URL=window.TEST_SYNC||"https://script.google.com/macros/s/AKfycbybA4b-6yKb_M-18WY6XCyFzUGS92u0oukAjvrUYqG8zpZP25etpLcpMToiYlMmXI-ruA/exec";
 let syncState="",syncT=null,pulledAt=0,pushing=false;
 const SYNCMSG=()=>({ok:"☁️ saved",busy:"☁️ saving…",off:"⚠️ offline — saved on this device"})[syncState]||"";
 const setSync=st=>{syncState=st;const el=$("syncst");if(el)el.textContent=SYNCMSG()};
