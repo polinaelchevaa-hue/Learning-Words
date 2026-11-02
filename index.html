@@ -159,7 +159,7 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .slot.on{border-color:var(--esp)}.slot.fixed{border:none;width:auto;min-width:10px}.sgap{width:14px}
 .slots.ok .slot{border-color:var(--ok);color:var(--ok)}.slots.bad .slot{border-color:var(--bad)}
 .tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:6px}
-.tile{width:44px;height:48px;padding:0;font-size:22px}
+.ltile{width:44px;height:48px;padding:0;font-size:22px;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 .shake{animation:shake .35s;border-color:var(--bad);background:var(--bad-soft)}
 @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .slots{column-gap:16px;row-gap:10px}.sw{display:inline-flex;gap:5px;flex-wrap:nowrap}
@@ -1063,7 +1063,7 @@ function qSpell(w,el,done){
     let k=0;const slots=`<span class="sw">`+chars.map((c,i)=>{if(!/[a-z]/i.test(c))return c===" "?`</span><span class="sw">`:`<span class="slot fixed">${c}</span>`;const j=k++;return `<span class="slot ${j<got?"on":""}">${j<got?chars[i]:""}</span>`}).join("")+`</span>`;
     el.innerHTML=`<div class="card" style="cursor:default"><div class="txt"><div class="ru">${w[1]}</div></div><div class="pic">${pic(w)}</div></div>
     <p class="hint">${fin?"":"Tap the letters in the right order"}</p><div class="slots ${fin?(miss?"bad":"ok"):""}">${slots}</div>
-    ${fin?`<div class="fb ${miss?"bad":"ok"}">${miss?"The word is:":"Correct! ✨"}<div class="full"><span class="term">${w[0]} — ${w[1]}</span></div></div>`:`<div class="tiles">${tiles.map((c,i)=>`<button class="tok tile ${used[i]?"gone":""}" data-t="${i}" ${used[i]?"disabled":""}>${c}</button>`).join("")}</div><div class="fb bad" id="spfb">${miss?`Mistakes: ${miss}`:""}</div>`}
+    ${fin?`<div class="fb ${miss?"bad":"ok"}">${miss?"The word is:":"Correct! ✨"}<div class="full"><span class="term">${w[0]} — ${w[1]}</span></div></div>`:`<div class="tiles">${tiles.map((c,i)=>`<button class="tok ltile ${used[i]?"gone":""}" data-t="${i}" ${used[i]?"disabled":""}>${c}</button>`).join("")}</div><div class="fb bad" id="spfb">${miss?`Mistakes: ${miss}`:""}</div>`}
     <div class="nav"><button class="round" id="spk" aria-label="Listen">🔊</button>${fin?`<button class="btn" id="snx">Next →</button>`:`<button class="btn ghost" id="sska">Show answer</button>`}</div>`;
     $("spk").onclick=()=>say(t);
     if(fin){$("snx").onclick=()=>done(!miss);return}
