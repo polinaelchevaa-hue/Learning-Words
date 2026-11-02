@@ -124,6 +124,18 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .round:disabled{opacity:.4;cursor:default}
 @media (max-width:600px){.mgrid{grid-template-columns:repeat(3,1fr)}.tabs{grid-template-columns:repeat(2,1fr)}.card{grid-template-columns:1fr;min-height:0}.pic{max-width:180px;order:-1}.opts{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.dash{display:flex;flex-direction:column;gap:14px}
+.gcard{background:var(--paper);border:1.5px solid var(--line);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px;text-decoration:none;color:inherit}
+.gtop,.allf{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.allf{flex-direction:row;background:var(--pink);border-color:var(--pink);color:#3e2723}.allf small{color:#6b4f49!important}
+.gtop .ic,.allf .ic{font-size:30px}.gtop b,.allf b{display:block;font-size:19px}.gtop small,.allf small{color:var(--muted);font-size:13px}
+.gtop .go,.allf .go{margin-left:auto;font-size:22px}
+.studs{display:flex;flex-wrap:wrap;gap:8px}
+.stud{background:var(--pink);color:#3e2723;border-radius:999px;padding:5px 13px;font-weight:600;font-size:14px}
+.glink{display:flex;gap:8px;align-items:center;min-width:0}
+.glink code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--muted);background:var(--bg,#f5f0e6);border-radius:10px;padding:8px 10px}
+.copy{flex:none;border:1.5px solid var(--ink,#3e2723);background:transparent;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:inherit}
+.toGroups{display:inline-block;margin-bottom:10px;font-weight:600;color:var(--muted);text-decoration:none;font-size:14px}
 </style></head><body>
 <div class="wrap">
   <header class="hero">
@@ -952,7 +964,7 @@ const LIB=[
 }
 ];
 /* ===== GROUPS: link code → which folders this group sees ===== */
-const GROUPS={"a1-k7p2": {"name": "A1 group", "folders": [0]}, "b1-m4x9": {"name": "B1 group", "folders": [1]}};
+const GROUPS={"a1-k7p2": {"name": "A1 group", "icon": "🌱", "students": ["Kate", "Marta", "Dasha", "Ann"], "folders": [0]}, "b1-m4x9": {"name": "B1 group", "icon": "🍝", "students": ["Olga", "Rita", "Mary"], "folders": [1]}};
 const TEACHER="teacher-7nq4";
 /* ===== app ===== */
 const $=id=>document.getElementById(id);
@@ -965,7 +977,7 @@ const norm=s=>s.toLowerCase().replace(/[’`]/g,"'").replace(/[.?!…,—-]/g," 
 const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let view="home",fI=0,mI=0,mode=store.get("mode","cards");
 let CODE="",OK=[];
-function access(){CODE=decodeURIComponent(location.hash.slice(1));OK=CODE===TEACHER?LIB.map((_,i)=>i):((GROUPS[CODE]||{}).folders||[]).filter(i=>LIB[i])}
+function access(){CODE=decodeURIComponent(location.hash.slice(1));if(CODE===TEACHER)store.set("isTeacher",1);OK=CODE===TEACHER?LIB.map((_,i)=>i):((GROUPS[CODE]||{}).folders||[]).filter(i=>LIB[i])}
 access();
 const ALL=f=>({name:"Review the whole folder",icon:"🔁",words:f.modules.flatMap(m=>m.words.map(w=>[w[0],w[1],w[2],w[3],w[4]||m.icon]))});
 const M=()=>mI<0?ALL(LIB[fI]):LIB[fI].modules[mI];
@@ -987,14 +999,29 @@ const prompt=w=>`<div class="txt"><div class="ru">${w[1]}</div><div class="ex">$
 const crumbs=()=>`<nav class="crumbs"><button data-go="home">All folders</button>${view!=="home"?` › <button data-go="folder">${LIB[fI].name}</button>`:""}${view==="module"?` › <span>${M().name}</span>`:""}</nav>`;
 function bindCrumbs(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{view=b.dataset.go;draw()})}
 
+function dash(app){
+  const base=location.origin+location.pathname;
+  const cnt=f=>f.modules.reduce((n,m)=>n+m.words.length,0);
+  app.innerHTML=`<p class="gname">My groups</p><div class="dash">${Object.entries(GROUPS).map(([c,g])=>`<div class="gcard">
+    <a class="gtop" href="#${c}"><span class="ic">${g.icon||"👥"}</span><span><b>${g.name}</b><small>${g.folders.map(i=>LIB[i]?`${LIB[i].name} · ${cnt(LIB[i])} words`:"").join(", ")}</small></span><span class="go">→</span></a>
+    <div class="studs">${(g.students||[]).map(n=>`<span class="stud">${n}</span>`).join("")}</div>
+    <div class="glink"><code>${base}#${c}</code><button class="copy" data-l="${base}#${c}">Copy link</button></div></div>`).join("")}
+  <a class="gcard allf" href="#${TEACHER}"><span class="ic">📚</span><span><b>All folders</b><small>Teacher view: every folder and module</small></span><span class="go">→</span></a></div>`;
+  document.querySelectorAll(".copy").forEach(b=>b.onclick=()=>{const done=()=>{b.textContent="Copied ✓";setTimeout(()=>b.textContent="Copy link",1500)};
+    try{navigator.clipboard.writeText(b.dataset.l).then(done,()=>prompt2(b.dataset.l))}catch(e){prompt2(b.dataset.l)}});
+}
+function prompt2(l){const c=document.createElement("textarea");c.value=l;document.body.appendChild(c);c.select();try{document.execCommand("copy")}catch(e){}c.remove()}
 function draw(){clearInterval(mt);
   store.set("pos",{view,fI,mI});
   const app=$("app");
+  const T=store.get("isTeacher",0);
+  if(!CODE&&T){dash(app);return}
   if(!OK.length){app.innerHTML=`<div class="done locked"><b>Hello! 👋</b><span>Please open the link your teacher sent you.</span></div>`;return}
   if(!OK.includes(fI)){fI=OK[0];view="home"}
+  const back=T&&CODE?`<a href="#" class="toGroups">← All groups</a>`:"";
   if(view==="home"){
     const gname=CODE===TEACHER?"Teacher view: all folders":(GROUPS[CODE].name);
-    app.innerHTML=`<p class="gname">${gname}</p><div class="grid">${OK.map(i=>{const f=LIB[i];return `<button class="tile" data-f="${i}"><span class="ic">${f.icon}</span><b>${f.name}</b><small>${f.modules.length} modules · ${f.modules.reduce((n,m)=>n+m.words.length,0)} words</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</button>`}).join("")}</div>`+(CODE===TEACHER?`<section class="glinks"><b>Group links</b><p class="hint" style="text-align:left;margin:0">Add the code to the end of the page link and send it to the group. Each group sees only its own folders.</p>${Object.entries(GROUPS).map(([c,g])=>`<div class="gl"><span><b>${g.name}</b><small>${g.folders.map(i=>LIB[i]?LIB[i].name:"").join(", ")}</small></span><a href="#${c}" class="code">#${c}</a></div>`).join("")}<div class="gl"><span><b>You (teacher)</b><small>all folders</small></span><a href="#${TEACHER}" class="code">#${TEACHER}</a></div></section>`:"");
+    app.innerHTML=back+`<p class="gname">${gname}</p><div class="grid">${OK.map(i=>{const f=LIB[i];return `<button class="tile" data-f="${i}"><span class="ic">${f.icon}</span><b>${f.name}</b><small>${f.modules.length} modules · ${f.modules.reduce((n,m)=>n+m.words.length,0)} words</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</button>`}).join("")}</div>`+(CODE===TEACHER?`<section class="glinks"><b>Group links</b><p class="hint" style="text-align:left;margin:0">Add the code to the end of the page link and send it to the group. Each group sees only its own folders.</p>${Object.entries(GROUPS).map(([c,g])=>`<div class="gl"><span><b>${g.name}</b><small>${g.folders.map(i=>LIB[i]?LIB[i].name:"").join(", ")}</small></span><a href="#${c}" class="code">#${c}</a></div>`).join("")}<div class="gl"><span><b>You (teacher)</b><small>all folders</small></span><a href="#${TEACHER}" class="code">#${TEACHER}</a></div></section>`:"");
     document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{fI=+b.dataset.f;view="folder";draw()});
   } else if(view==="folder"){
     const f=LIB[fI];
