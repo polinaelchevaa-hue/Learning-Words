@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word Cards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one cream column; set picker, three mode tabs, then the active mode. Card = text left, picture right (stacks on phones). */
+:root{
+  --bg:#f5f0e6; --paper:#fffaf2; --ink:#3e2723; --muted:#7d6660; --line:#e6dccd;
+  --lime:#3e2723; --lime-soft:#f4c9d6; --blue:#3e2723; --blue-soft:#f8dde5;
+  --pink:#f4c9d6; --esp:#3e2723;
+  --ok:#4f7a52; --ok-soft:#e5efd9; --bad:#b2445c; --bad-soft:#fbe1e8;
+  --display:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; --body:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#241715;--paper:#2f201d;--ink:#f5f0e6;--muted:#cbb7b0;--line:#4a3430;--lime:#f4c9d6;--lime-soft:#5a3a42;--blue:#f4c9d6;--blue-soft:#4a3036;--pink:#f4c9d6;--esp:#3e2723;--ok:#a7cf9c;--ok-soft:#2f3d29;--bad:#f2a1b6;--bad-soft:#4a2830;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#241715;--paper:#2f201d;--ink:#f5f0e6;--muted:#cbb7b0;--line:#4a3430;--lime:#f4c9d6;--lime-soft:#5a3a42;--blue:#f4c9d6;--blue-soft:#4a3036;--pink:#f4c9d6;--esp:#3e2723;--ok:#a7cf9c;--ok-soft:#2f3d29;--bad:#f2a1b6;--bad-soft:#4a2830;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+ padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 48px}
+.wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-weight:700;color:var(--pink);font-size:clamp(34px,8vw,54px);line-height:1.05;margin:0;letter-spacing:-.01em}
+.sub{margin:6px 0 0;color:var(--pink);opacity:.85;font-size:15px;font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.chip{border:1.5px solid var(--line);background:var(--paper);border-radius:99px;padding:6px 14px;font-weight:600}
+.chip.on{background:var(--lime-soft);border-color:var(--lime)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tab{border:1.5px solid var(--line);background:var(--paper);border-radius:14px;padding:10px 8px;font-weight:700;text-align:center}
+.tab small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.tab.on{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.card{display:grid;grid-template-columns:1fr minmax(0,240px);gap:18px;align-items:center;min-height:300px;cursor:pointer;border:none;background:none;text-align:center;padding:0;width:100%}
+.card .txt{display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center;min-width:0}
+.ru{font-size:clamp(26px,5vw,34px);font-weight:700}
+.ex{font-family:var(--display);font-style:italic;font-size:clamp(22px,4.4vw,30px);line-height:1.35}
+.pic{aspect-ratio:4/5;width:100%;max-width:240px;border-radius:24px;border:5px solid var(--blue-soft);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;font-size:clamp(80px,16vw,120px);margin:0 auto;overflow:hidden}
+.pic img{width:100%;height:100%;object-fit:cover}
+.back{grid-column:1/-1;font-size:clamp(40px,9vw,64px);font-weight:300;letter-spacing:.01em}
+.hint{color:var(--muted);font-size:13.5px;text-align:center}
+.nav{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.btn{border:none;background:var(--blue);color:var(--bg);border-radius:12px;padding:10px 18px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.round{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--line);background:var(--paper);font-size:20px}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600;min-width:5ch;text-align:center}
+.star.on{color:#e0a92e;border-color:#e0a92e}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--lime);width:0;transition:width .3s}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:1.5px solid var(--line);background:var(--bg);border-radius:14px;padding:14px;font-size:18px;font-weight:600}
+.opt.ok{background:var(--ok-soft);border-color:var(--ok)}.opt.bad{background:var(--bad-soft);border-color:var(--bad)}
+.fb{text-align:center;font-weight:700;min-height:1.5em}
+.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+.gapin{font:inherit;font-size:22px;padding:10px 14px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:min(320px,100%);text-align:center}
+.gapin.ok{border-color:var(--ok);background:var(--ok-soft)}.gapin.bad{border-color:var(--bad);background:var(--bad-soft)}
+.done{text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;padding:30px 0}
+.done b{font-family:var(--display);font-style:italic;font-size:34px;color:var(--lime)}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;font-size:15px}
+.list div{background:var(--bg);border-radius:10px;padding:6px 10px}
+.list span{color:var(--muted)}
+details summary{cursor:pointer;color:var(--blue);font-weight:600}
+.crumbs{font-size:14px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.crumbs button{border:none;background:none;color:var(--blue);font-weight:600;padding:0;text-decoration:underline;text-underline-offset:3px}
+.fh{font-family:var(--display);font-style:italic;color:var(--blue);font-size:clamp(26px,5vw,34px);margin:6px 0 10px}
+#app{display:flex;flex-direction:column;gap:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tile{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:18px;padding:18px}
+.tile .ic{font-size:40px;line-height:1}.tile b{font-size:20px}.tile small{color:var(--muted)}
+.tile:hover,.mod:hover{border-color:var(--lime)}
+.mods{display:flex;flex-direction:column;gap:10px}
+.mod{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;text-align:left;border:1.5px solid var(--line);background:var(--paper);border-radius:16px;padding:14px 16px}
+.mod .ic{width:52px;height:52px;border-radius:14px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:26px}
+.mod b{display:block;font-size:18px}.mod small{color:var(--muted)}.mod .go{color:var(--blue);font-size:22px}
+.review{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;text-align:left;border:1.5px solid var(--lime);background:var(--lime-soft);border-radius:16px;padding:14px 16px;margin-bottom:10px;width:100%}
+.review .ic{width:52px;height:52px;border-radius:14px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:26px}
+.review b{display:block;font-size:18px}.review small{color:var(--muted)}.review .go{color:var(--blue);font-size:22px}
+.sort{display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.done .sort{justify-content:center;gap:20px;font-size:18px}
+.sort .k{color:var(--ok)}.sort .u{color:var(--bad)}
+.kbtn{flex:1;max-width:220px;border-radius:14px;padding:12px;font-weight:700;font-size:16px;border:2px solid}
+.kbtn.k{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.kbtn.u{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.weakbox{background:var(--paper);border:1.5px dashed var(--bad);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.weakbox .wh{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--bad)}
+.btn.sm{padding:5px 12px;font-size:14px}
+.wi{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wi .x{border:1.5px solid var(--ok);background:var(--ok-soft);color:var(--ok);border-radius:8px;width:32px;height:30px;font-weight:700;flex:none}
+.weakchip.on{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.weakrev{border-color:var(--bad);background:var(--bad-soft)}
+.frontsel .lbl{color:var(--muted);font-size:14px;font-weight:600}
+.back2{grid-column:1/-1;display:flex;flex-direction:column;gap:18px;align-items:center}
+.ex b{font-style:normal;color:var(--bad)}
+.full{display:flex;flex-direction:column;gap:4px;align-items:center;margin-top:6px;color:var(--ink);font-weight:400}
+.full .ex{font-size:clamp(20px,4vw,26px)}
+.full .term{font-size:15px;color:var(--muted);font-weight:600}
+.pg{display:flex;align-items:center;gap:8px;margin-top:6px;width:100%}
+.pgb{flex:1;max-width:180px;height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+.pgb i{display:block;height:100%;background:var(--ok)}
+.pgt{font-size:13px;font-weight:700;color:var(--ok);font-variant-numeric:tabular-nums;white-space:nowrap}
+.timer{font-variant-numeric:tabular-nums;font-size:22px;color:var(--blue)}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mt{min-height:78px;border:1.5px solid var(--line);background:var(--bg);border-radius:14px;padding:8px;font-size:15px;font-weight:600;line-height:1.25;transition:opacity .25s,transform .15s}
+.mt.en{background:var(--blue-soft)}
+.mt.sel{border-color:var(--lime);box-shadow:0 0 0 2px var(--lime)}
+.mt.good{background:var(--ok-soft);border-color:var(--ok)}
+.mt.gone{opacity:0;pointer-events:none}
+.mt.wrong{background:var(--bad-soft);border-color:var(--bad);transform:translateX(3px)}
+.gname{margin:0;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.glinks{background:var(--paper);border:1.5px dashed var(--blue-soft);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.gl{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.gl b{display:block}.gl small{color:var(--muted)}
+.code{font-family:ui-monospace,Menlo,monospace;background:var(--lime-soft);color:var(--ink);padding:4px 10px;border-radius:8px;text-decoration:none;font-weight:700}
+.locked{min-height:40vh;justify-content:center}
+.pgb i{background:var(--bad)}
+.hero{background:var(--esp);border-radius:26px;padding:24px 56px 26px 24px;position:relative}
+.hero::after{content:"♥";position:absolute;right:22px;bottom:18px;color:var(--pink);font-size:26px}
+.fh{font-family:var(--display);font-style:normal;font-weight:700}
+.done b{font-family:var(--display);font-style:normal;font-weight:700;color:var(--ink)}
+.ex{font-family:Georgia,"Times New Roman",serif}
+.tile{border-radius:22px}.tile:nth-child(odd){background:var(--pink);border-color:var(--pink)}
+.tile .ic{font-size:36px}
+.round:disabled{opacity:.4;cursor:default}
+@media (max-width:600px){.mgrid{grid-template-columns:repeat(3,1fr)}.tabs{grid-template-columns:repeat(2,1fr)}.card{grid-template-columns:1fr;min-height:0}.pic{max-width:180px;order:-1}.opts{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="wrap">
+  <header class="hero">
+    <h1>Word Cards</h1>
+    <p class="sub">Choose a folder, then a module. Study in four ways!</p>
+  </header>
+  <main id="app"></main>
+</div>
+<script>
+/* ===== LIBRARY: folders → modules → words [English, Russian, example with ___, answer (alternatives with |), picture] ===== */
+const LIB=[
+{
+"name": "1A. Meeting people",
+"icon": "📁",
+"modules": [
+{
+"name": "1. Meet & Greet",
+"icon": "👋",
+"words": [
+[
+"Hello! / Hi!",
+"Привет! / Здравствуй!",
+"___! I'm Ann.",
+"Hi|Hello",
+"👋"
+],
+[
+"What's your name?",
+"Как тебя зовут?",
+"Hi! ___ — I'm Dasha.",
+"What's your name?",
+"💬"
+],
+[
+"My name's… / I'm…",
+"Меня зовут… / Я…",
+"Hi! ___ Dan.",
+"I'm|My name's|I am|My name is",
+"💬"
+],
+[
+"Nice to meet you.",
+"Приятно познакомиться.",
+"I'm Kate. ___.",
+"Nice to meet you",
+"💬"
+],
+[
+"Nice to meet you, too.",
+"Мне тоже приятно познакомиться.",
+"Nice to meet you. — ___!",
+"Nice to meet you, too|Nice to meet you too",
+"💬"
+],
+[
+"How are you?",
+"Как дела? / Как ты?",
+"Hi, Ed! ___?",
+"How are you",
+"💬"
+],
+[
+"I'm fine, thanks. / I'm good, thank you. / Very well.",
+"Хорошо, спасибо.",
+"How are you? — ___, thanks.",
+"I'm fine|I'm good|Very well",
+"💬"
+],
+[
+"And you?",
+"А ты? / А у тебя?",
+"I'm good, thanks. ___?",
+"And you",
+"💬"
+],
+[
+"Thank you / Thanks",
+"Спасибо",
+"Yes. Message me. ___!",
+"Thanks|Thank you",
+"💬"
+],
+[
+"Sorry?",
+"Простите? (Не расслышала)",
+"Jasmine. — ___? — Jasmine!",
+"Sorry",
+"💬"
+],
+[
+"Goodbye! / Bye!",
+"До свидания! / Пока!",
+"___, Dan! See you later!",
+"Bye|Goodbye",
+"👋"
+],
+[
+"See you later!",
+"Увидимся! / До встречи!",
+"Bye, Kate! ___!",
+"See you later",
+"💬"
+],
+[
+"This is…",
+"Это… (когда знакомишь)",
+"___ Marta. She's in my English class.",
+"This is",
+"💬"
+],
+[
+"She's in my class.",
+"Она в моей группе.",
+"This is Kate. ___.",
+"She's in my class|She's in my English class",
+"💬"
+],
+[
+"partner",
+"партнёр, напарник",
+"Great! You're my ___!",
+"partner",
+"🤝"
+],
+[
+"teacher",
+"учитель, преподаватель",
+"I'm Polina. I'm your ___.",
+"teacher",
+"👩‍🏫"
+],
+[
+"I'm a… (job)",
+"Я … (профессия)",
+"___ a teacher.",
+"I'm|I am",
+"💬"
+],
+[
+"I live in…",
+"Я живу в…",
+"I ___ Moscow.",
+"live in",
+"💬"
+],
+[
+"I like…",
+"Мне нравится…",
+"I ___ cats. They're cute!",
+"like",
+"💬"
+],
+[
+"Me too!",
+"Я тоже!",
+"I like the sea. — ___!",
+"Me too",
+"💬"
+],
+[
+"Not me!",
+"А я нет!",
+"I like mornings. — ___! I like evenings.",
+"Not me",
+"💬"
+],
+[
+"or",
+"или",
+"Cats ___ dogs?",
+"or",
+"💬"
+],
+[
+"tea",
+"чай",
+"I like ___. It's hot and relaxing.",
+"tea",
+"🍵"
+],
+[
+"coffee",
+"кофе",
+"I like ___. It's tasty and strong!",
+"coffee",
+"☕"
+],
+[
+"cats",
+"кошки",
+"I like ___. They're cute!",
+"cats",
+"🐱"
+],
+[
+"dogs",
+"собаки",
+"I like ___. They're friendly!",
+"dogs",
+"🐶"
+],
+[
+"the sea",
+"море",
+"I like the ___. It's warm and beautiful!",
+"sea",
+"🌊"
+],
+[
+"the mountains",
+"горы",
+"I like the ___. They're amazing!",
+"mountains",
+"🏔️"
+],
+[
+"morning",
+"утро",
+"I like the ___. It's calm.",
+"morning",
+"🌅"
+],
+[
+"evening",
+"вечер",
+"I like the ___. It's cosy and romantic.",
+"evening",
+"🌙"
+],
+[
+"tasty",
+"вкусный",
+"I like coffee. It's ___!",
+"tasty",
+"💬"
+],
+[
+"delicious",
+"очень вкусный",
+"I like pizza. It's ___!",
+"delicious",
+"💬"
+],
+[
+"relaxing",
+"расслабляющий",
+"I like tea. It's ___.",
+"relaxing",
+"💬"
+],
+[
+"strong",
+"крепкий",
+"My coffee is very ___!",
+"strong",
+"💬"
+],
+[
+"hot",
+"горячий",
+"Be careful! The coffee is ___!",
+"hot",
+"💬"
+],
+[
+"cute",
+"милый",
+"I like cats. They're ___!",
+"cute",
+"💬"
+],
+[
+"funny",
+"смешной",
+"I like dogs. They're ___!",
+"funny",
+"💬"
+],
+[
+"smart",
+"умный",
+"My dog is very ___.",
+"smart",
+"💬"
+],
+[
+"friendly",
+"дружелюбный",
+"I like dogs. They're ___.",
+"friendly",
+"💬"
+],
+[
+"healthy",
+"полезный (для здоровья)",
+"I like salad. It's ___.",
+"healthy",
+"💬"
+],
+[
+"fresh",
+"свежий",
+"The fish is very ___.",
+"fresh",
+"💬"
+],
+[
+"my favourite",
+"мой любимый",
+"Sushi is ___!",
+"my favourite|my favorite",
+"💬"
+],
+[
+"warm",
+"тёплый",
+"I like the sea. It's ___!",
+"warm",
+"💬"
+],
+[
+"beautiful",
+"красивый",
+"I like the mountains. They're ___!",
+"beautiful",
+"💬"
+],
+[
+"calm",
+"спокойный",
+"I like the morning. It's ___.",
+"calm",
+"💬"
+],
+[
+"amazing",
+"потрясающий",
+"The sea is ___!",
+"amazing",
+"💬"
+],
+[
+"interesting",
+"интересный",
+"I like YouTube. It's ___!",
+"interesting",
+"💬"
+],
+[
+"fun",
+"весёлый, интересный",
+"I like Instagram. It's ___!",
+"fun",
+"💬"
+],
+[
+"useful",
+"полезный",
+"I like YouTube. It's ___.",
+"useful",
+"💬"
+],
+[
+"popular",
+"популярный",
+"TikTok is very ___.",
+"popular",
+"💬"
+],
+[
+"cosy",
+"уютный",
+"I like the evening. It's ___.",
+"cosy",
+"💬"
+],
+[
+"energetic",
+"энергичный",
+"I like the morning. I'm ___!",
+"energetic",
+"💬"
+],
+[
+"romantic",
+"романтичный",
+"I like the evening. It's ___.",
+"romantic",
+"💬"
+]
+]
+},
+{
+"name": "2. My routine",
+"icon": "⏰",
+"words": [
+[
+"set an alarm",
+"ставить будильник",
+"I ___ for 7 a.m.",
+"set an alarm",
+"⏰"
+],
+[
+"snooze the alarm",
+"откладывать будильник",
+"I always ___. Five more minutes!",
+"snooze the alarm",
+"😴"
+],
+[
+"wake up",
+"просыпаться",
+"I ___ at 7 every day.",
+"wake up",
+"🌅"
+],
+[
+"get up",
+"вставать (с кровати)",
+"I wake up at 7, but I ___ at 7:30.",
+"get up",
+"🛏️"
+],
+[
+"check my phone",
+"проверять телефон",
+"I ___ in bed every morning.",
+"check my phone",
+"📱"
+],
+[
+"take a shower",
+"принимать душ",
+"I ___ in the morning.",
+"take a shower",
+"🚿"
+],
+[
+"brush my teeth",
+"чистить зубы",
+"I ___ twice a day.",
+"brush my teeth",
+"🪥"
+],
+[
+"wash my face",
+"умываться",
+"I ___ with cold water.",
+"wash my face",
+"🧼"
+],
+[
+"put on moisturizer",
+"наносить увлажняющий крем",
+"In the evening I ___.",
+"put on moisturizer|put on moisturiser",
+"🧴"
+],
+[
+"serum",
+"сыворотка (для лица)",
+"I put a few drops of ___ on my face.",
+"serum",
+"💧"
+],
+[
+"toner",
+"тоник (для лица)",
+"First I use ___, then serum.",
+"toner",
+"🫧"
+],
+[
+"a bathrobe",
+"банный халат",
+"I love my cozy ___!",
+"bathrobe",
+"🧖‍♀️"
+],
+[
+"have breakfast",
+"завтракать",
+"I ___ at 8.",
+"have breakfast",
+"🥐"
+],
+[
+"make coffee",
+"варить кофе",
+"I ___ every morning.",
+"make coffee",
+"☕"
+],
+[
+"go to work",
+"ходить на работу",
+"I ___ at 9.",
+"go to work",
+"💼"
+],
+[
+"have lunch",
+"обедать",
+"We ___ in a café.",
+"have lunch",
+"🥗"
+],
+[
+"go to the gym",
+"ходить в спортзал",
+"I ___ on Mondays.",
+"go to the gym",
+"🏋️"
+],
+[
+"cook dinner",
+"готовить ужин",
+"I ___ for my family.",
+"cook dinner",
+"🍝"
+],
+[
+"watch a series",
+"смотреть сериал",
+"I ___ in bed every evening.",
+"watch a series",
+"📺"
+],
+[
+"get in bed",
+"ложиться в кровать",
+"I ___ at 11 p.m.",
+"get in bed",
+"🛌"
+],
+[
+"fall asleep",
+"засыпать",
+"I always ___ in front of the TV.",
+"fall asleep",
+"💤"
+],
+[
+"remember my dreams",
+"помнить свои сны",
+"I don't ___.",
+"remember my dreams",
+"💭"
+],
+[
+"a morning person",
+"жаворонок",
+"I'm ___. I love mornings!",
+"a morning person",
+"🐦"
+],
+[
+"a night owl",
+"сова (о человеке)",
+"I'm ___. I go to bed at 2 a.m.!",
+"a night owl",
+"🦉"
+],
+[
+"every day",
+"каждый день",
+"I drink coffee ___.",
+"every day",
+"📅"
+]
+]
+},
+{
+"name": "3. Jobs",
+"icon": "💼",
+"words": [
+[
+"a doctor",
+"врач",
+"I'm a ___. I work in a hospital and I see patients.",
+"doctor",
+"🩺"
+],
+[
+"a nurse",
+"медсестра / медбрат",
+"I'm a ___. I help doctors and take care of patients.",
+"nurse",
+"💉"
+],
+[
+"an actor",
+"актёр",
+"I'm an ___. I work in films and in the theatre.",
+"actor",
+"🎭"
+],
+[
+"a police officer",
+"полицейский",
+"I'm a ___. I wear a uniform and help people.",
+"police officer",
+"👮"
+],
+[
+"a shop assistant",
+"продавец-консультант",
+"I'm a ___. I work in a shop and help customers.",
+"shop assistant",
+"🛍️"
+],
+[
+"a singer",
+"певец / певица",
+"I'm a ___. I sing songs and give concerts.",
+"singer",
+"🎤"
+],
+[
+"an engineer",
+"инженер",
+"I'm an ___. I design and build machines and bridges.",
+"engineer",
+"👷"
+],
+[
+"a lawyer",
+"юрист, адвокат",
+"I'm a ___. I help people with the law.",
+"lawyer",
+"⚖️"
+],
+[
+"a pilot",
+"пилот",
+"I'm a ___. I fly planes.",
+"pilot",
+"✈️"
+],
+[
+"a politician",
+"политик",
+"I'm a ___. I work in the government.",
+"politician",
+"🏛️"
+],
+[
+"a scientist",
+"учёный",
+"I'm a ___. I work in a lab and do experiments.",
+"scientist",
+"🔬"
+],
+[
+"a writer",
+"писатель",
+"I'm a ___. I write books.",
+"writer",
+"✍️"
+],
+[
+"unemployed",
+"безработный",
+"I'm ___. I don't have a job at the moment.",
+"unemployed",
+"🤷"
+],
+[
+"a digital designer",
+"цифровой дизайнер",
+"I'm a ___. I make logos and websites.",
+"digital designer",
+"🎨"
+],
+[
+"a firefighter",
+"пожарный",
+"I'm a ___. I put out fires and save people.",
+"firefighter",
+"🚒"
+],
+[
+"retired",
+"на пенсии",
+"I'm ___. I don't work. My working life is finished.",
+"retired",
+"👵"
+],
+[
+"a bus driver",
+"водитель автобуса",
+"I'm a ___. I drive a bus in the city.",
+"bus driver",
+"🚌"
+],
+[
+"a taxi driver",
+"таксист",
+"I'm a ___. I drive people around the city at night.",
+"taxi driver",
+"🚕"
+],
+[
+"a train driver",
+"машинист поезда",
+"I'm a ___. I drive trains.",
+"train driver",
+"🚆"
+],
+[
+"a football player",
+"футболист",
+"I'm a ___. I play for a big team.",
+"football player",
+"⚽"
+],
+[
+"a tennis player",
+"теннисист",
+"I'm a ___. I play tennis every day.",
+"tennis player",
+"🎾"
+],
+[
+"a hotel manager",
+"управляющий отелем",
+"I'm a ___. I work in a hotel in Rome.",
+"hotel manager",
+"🏨"
+],
+[
+"a business manager",
+"бизнес-менеджер",
+"I'm a ___. I work in an office.",
+"business manager",
+"💼"
+],
+[
+"a university student",
+"студент университета",
+"I'm a ___. I study at university.",
+"university student",
+"🎓"
+],
+[
+"a law student",
+"студент-юрист",
+"I'm a ___. I want to be a lawyer.",
+"law student",
+"📚"
+],
+[
+"an art student",
+"студент худ. факультета",
+"I'm an ___. I love painting.",
+"art student",
+"🖌️"
+],
+[
+"a farm worker",
+"работник фермы",
+"I'm a ___. I work outside with animals.",
+"farm worker",
+"🐄"
+],
+[
+"an office worker",
+"офисный работник",
+"I'm an ___. I work at a computer all day.",
+"office worker",
+"🖥️"
+],
+[
+"What do you do?",
+"Кем ты работаешь?",
+"___ — I'm a teacher.",
+"What do you do?",
+"❓"
+],
+[
+"I'd like to be…",
+"Я бы хотела быть…",
+"___ a pilot because I love travelling.",
+"I'd like to be|I would like to be",
+"💭"
+]
+]
+}
+],
+"group": "A1"
+},
+{
+"name": "Food",
+"icon": "🍓",
+"group": "B1",
+"modules": [
+{
+"name": "1. Eating in and out",
+"icon": "🍽️",
+"words": [
+[
+"mouthwatering",
+"аппетитный, слюнки текут",
+"This chocolate cake looks ___!",
+"mouthwatering",
+"🤤"
+],
+[
+"gross",
+"мерзкий, фу",
+"Pineapple on pizza? ___!",
+"gross",
+"🤢"
+],
+[
+"unappetizing",
+"неаппетитный",
+"The soup is grey and ___.",
+"unappetizing",
+"😕"
+],
+[
+"It tastes awful.",
+"Ужасно на вкус.",
+"This milk is old. ___!",
+"It tastes awful",
+"🥛"
+],
+[
+"exactly what I'm craving",
+"именно то, чего мне хочется",
+"Chocolate! It's ___!",
+"exactly what I'm craving",
+"🍫"
+],
+[
+"crave",
+"очень хотеть (какой-то еды)",
+"I always ___ something sweet after dinner.",
+"crave",
+"🍩"
+],
+[
+"be allergic to",
+"иметь аллергию на",
+"I can't eat nuts. I'm ___ them.",
+"allergic to",
+"🥜"
+],
+[
+"seafood",
+"морепродукты",
+"Prawns, crab and oysters are ___.",
+"seafood",
+"🦐"
+],
+[
+"salmon",
+"лосось (l не читается: SAM-un)",
+"I love grilled ___ with lemon.",
+"salmon",
+"🐟"
+],
+[
+"crab",
+"краб",
+"We had ___ and prawns at the beach café.",
+"crab",
+"🦀"
+],
+[
+"sea urchin",
+"морской ёж",
+"Have you ever tried ___? It's popular in Japan.",
+"sea urchin",
+"🌊"
+],
+[
+"lamb",
+"баранина",
+"My grandma cooks ___ with potatoes.",
+"lamb",
+"🐑"
+],
+[
+"controversial",
+"спорный, вызывающий споры",
+"Pineapple on pizza is a ___ topping.",
+"controversial",
+"🍍"
+],
+[
+"eat out",
+"есть вне дома (в кафе)",
+"I don't want to cook. Let's ___ tonight!",
+"eat out",
+"🍽️"
+],
+[
+"Dig in!",
+"Налетайте! / Приступайте к еде!",
+"Dinner is ready, everyone! ___!",
+"Dig in",
+"🥘"
+]
+]
+},
+{
+"name": "2. Cooking time",
+"icon": "👩‍🍳",
+"words": [
+[
+"season",
+"приправлять",
+"___ the soup with salt and pepper.",
+"season",
+"🧂"
+],
+[
+"boil",
+"варить (в воде)",
+"___ the pasta for 10 minutes.",
+"boil",
+"🍝"
+],
+[
+"steam",
+"готовить на пару",
+"___ the broccoli. It's healthier than boiling!",
+"steam",
+"🥦"
+],
+[
+"fry",
+"жарить",
+"___ the eggs in a little oil.",
+"fry",
+"🍳"
+],
+[
+"grill",
+"жарить на гриле",
+"In summer we ___ burgers outside.",
+"grill",
+"🍔"
+],
+[
+"roast",
+"запекать (мясо, овощи)",
+"We ___ a chicken with potatoes every Sunday.",
+"roast",
+"🍗"
+],
+[
+"bake",
+"печь (хлеб, торты)",
+"I ___ cakes for my friends' birthdays.",
+"bake",
+"🎂"
+],
+[
+"chop",
+"нарезать",
+"___ the onion into small pieces.",
+"chop",
+"🔪"
+],
+[
+"grate",
+"тереть на тёрке",
+"___ the cheese and put it on the pasta.",
+"grate",
+"🧀"
+],
+[
+"whisk",
+"взбивать",
+"___ the eggs and milk with a fork.",
+"whisk",
+"🥚"
+],
+[
+"a grater",
+"тёрка",
+"I need a ___ for the cheese.",
+"grater",
+"🧀"
+],
+[
+"a saucepan",
+"кастрюля с ручкой, сотейник",
+"Heat the milk in a small ___.",
+"saucepan",
+"🫕"
+],
+[
+"a baking dish",
+"форма для запекания",
+"Put the lasagna in a ___.",
+"baking dish",
+"🥘"
+],
+[
+"cut down on",
+"сокращать (есть меньше)",
+"I'm trying to ___ sugar. Only one dessert a week!",
+"cut down on",
+"🍬"
+],
+[
+"cut out",
+"полностью исключить",
+"My doctor told me to ___ coffee completely.",
+"cut out",
+"☕"
+],
+[
+"pig out on",
+"объедаться",
+"On Friday nights we ___ pizza and ice cream.",
+"pig out on",
+"🐷"
+]
+]
+},
+{
+"name": "3. Food habits",
+"icon": "🥗",
+"words": [
+[
+"get fixated on",
+"зацикливаться на",
+"I always ___ one breakfast for months.",
+"get fixated on",
+"🔁"
+],
+[
+"eat on the go",
+"есть на ходу",
+"An apple is perfect to ___.",
+"eat on the go",
+"🍎"
+],
+[
+"consider myself",
+"считать себя",
+"I don't ___ a good cook.",
+"consider myself",
+"🤔"
+],
+[
+"count on",
+"рассчитывать на",
+"You can always ___ my mum's recipes.",
+"count on",
+"🤝"
+],
+[
+"strip away",
+"постепенно убирать",
+"Step by step, I want to ___ all the sugar from my diet.",
+"strip away",
+"🪜"
+],
+[
+"have a sweet tooth",
+"быть сладкоежкой",
+"I ___. I can't live without chocolate!",
+"have a sweet tooth",
+"🍰"
+],
+[
+"can't resist",
+"не могу устоять перед",
+"I ___ ice cream. It must not be in my house!",
+"can't resist",
+"🍦"
+],
+[
+"a piece of cake",
+"проще простого",
+"The test was ___!",
+"a piece of cake",
+"🍰"
+],
+[
+"spill the beans",
+"проболтаться, выдать секрет",
+"Don't ___ about the surprise party!",
+"spill the beans",
+"🤫"
+],
+[
+"not my cup of tea",
+"не моё, не в моём вкусе",
+"Horror films are ___.",
+"not my cup of tea",
+"🍵"
+],
+[
+"in a nutshell",
+"короче говоря, в двух словах",
+"___, girl dinner is snacks for dinner.",
+"In a nutshell",
+"🥜"
+],
+[
+"wolf down",
+"проглотить, быстро съесть",
+"I was so hungry that I ___ my burger in a minute.",
+"wolfed down",
+"🐺"
+],
+[
+"eat like a bird",
+"есть как птичка (очень мало)",
+"She ___: just a salad and a coffee.",
+"eats like a bird",
+"🐦"
+],
+[
+"eat like a horse",
+"есть за троих",
+"My brother ___, but he's still slim!",
+"eats like a horse",
+"🐴"
+],
+[
+"girl dinner",
+"«девичий ужин»: тарелка закусок вместо ужина",
+"Cheese, crackers and grapes: my perfect ___!",
+"girl dinner",
+"🧀"
+]
+]
+}
+]
+}
+];
+/* ===== GROUPS: link code → which folders this group sees ===== */
+const GROUPS={"a1-k7p2": {"name": "A1 group", "folders": [0]}, "b1-m4x9": {"name": "B1 group", "folders": [1]}};
+const TEACHER="teacher-7nq4";
+/* ===== app ===== */
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const norm=s=>s.toLowerCase().replace(/[’`]/g,"'").replace(/[.?!…,—-]/g," ")
+  .replace(/\bcan't\b/g,"can not").replace(/\bwon't\b/g,"will not").replace(/n't\b/g," not")
+  .replace(/\bi'm\b/g,"i am").replace(/'re\b/g," are").replace(/\b(he|she|it|that|what|who|there|here|name)'s\b/g,"$1 is")
+  .replace(/'ll\b/g," will").replace(/'ve\b/g," have").replace(/'d\b/g," would")
+  .replace(/\s+/g," ").trim().replace(/^(a|an|the) /,"");
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let view="home",fI=0,mI=0,mode=store.get("mode","cards");
+let CODE="",OK=[];
+function access(){CODE=decodeURIComponent(location.hash.slice(1));OK=CODE===TEACHER?LIB.map((_,i)=>i):((GROUPS[CODE]||{}).folders||[]).filter(i=>LIB[i])}
+access();
+const ALL=f=>({name:"Review the whole folder",icon:"🔁",words:f.modules.flatMap(m=>m.words.map(w=>[w[0],w[1],w[2],w[3],w[4]||m.icon]))});
+const M=()=>mI<0?ALL(LIB[fI]):LIB[fI].modules[mI];
+let scope="all",front=store.get("front","ru");
+const filled=w=>w[2].replace(/___( ___)*/,`<b>${w[3].split("|")[0]}</b>`);
+const enFront=w=>`<div class="txt"><div class="ru" lang="en">${w[0]}</div></div><div class="pic">${pic(w)}</div>`;
+const ruBack=w=>`<div class="back2"><div class="ru">${w[1]}</div><div class="ex">${filled(w)}</div></div>`;
+const weakKey=()=>"weak_"+LIB[fI].name, weak=()=>store.get(weakKey(),[]);
+const knownKey=()=>"known_"+LIB[fI].name, knownL=()=>store.get(knownKey(),[]);
+const setWeak=(t,on)=>{let a=weak().filter(x=>x!==t);if(on)a.push(t);store.set(weakKey(),a);let k=knownL().filter(x=>x!==t);if(!on)k.push(t);store.set(knownKey(),k)};
+const prog=(f,words)=>{const k=store.get("known_"+f.name,[]);const n=words.filter(w=>k.includes(w[0])).length;return{n,t:words.length,p:words.length?Math.round(n/words.length*100):0}};
+const pbar=r=>`<span class="pg"><span class="pgb"><i style="width:${r.p}%"></i></span><span class="pgt">✓ ${r.n} / ${r.t}</span></span>`;
+const Wfull=()=>M().words, W=()=>scope==="weak"?Wfull().filter(w=>weak().includes(w[0])):Wfull();
+const key=()=>"stars_"+LIB[fI].name;
+const pic=w=>w[4]&&w[4].startsWith("data:")?`<img src="${w[4]}" alt="">`:(w[4]||M().icon);
+function say(t){try{const u=new SpeechSynthesisUtterance(t.replace(/…/g,""));u.lang="en-US";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+const stars=()=>store.get(key(),[]); /* stores English terms */
+const prompt=w=>`<div class="txt"><div class="ru">${w[1]}</div><div class="ex">${w[2]}</div></div><div class="pic">${pic(w)}</div>`;
+const crumbs=()=>`<nav class="crumbs"><button data-go="home">All folders</button>${view!=="home"?` › <button data-go="folder">${LIB[fI].name}</button>`:""}${view==="module"?` › <span>${M().name}</span>`:""}</nav>`;
+function bindCrumbs(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{view=b.dataset.go;draw()})}
+
+function draw(){clearInterval(mt);
+  store.set("pos",{view,fI,mI});
+  const app=$("app");
+  if(!OK.length){app.innerHTML=`<div class="done locked"><b>Hello! 👋</b><span>Please open the link your teacher sent you.</span></div>`;return}
+  if(!OK.includes(fI)){fI=OK[0];view="home"}
+  if(view==="home"){
+    const gname=CODE===TEACHER?"Teacher view: all folders":(GROUPS[CODE].name);
+    app.innerHTML=`<p class="gname">${gname}</p><div class="grid">${OK.map(i=>{const f=LIB[i];return `<button class="tile" data-f="${i}"><span class="ic">${f.icon}</span><b>${f.name}</b><small>${f.modules.length} modules · ${f.modules.reduce((n,m)=>n+m.words.length,0)} words</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</button>`}).join("")}</div>`+(CODE===TEACHER?`<section class="glinks"><b>Group links</b><p class="hint" style="text-align:left;margin:0">Add the code to the end of the page link and send it to the group. Each group sees only its own folders.</p>${Object.entries(GROUPS).map(([c,g])=>`<div class="gl"><span><b>${g.name}</b><small>${g.folders.map(i=>LIB[i]?LIB[i].name:"").join(", ")}</small></span><a href="#${c}" class="code">#${c}</a></div>`).join("")}<div class="gl"><span><b>You (teacher)</b><small>all folders</small></span><a href="#${TEACHER}" class="code">#${TEACHER}</a></div></section>`:"");
+    document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{fI=+b.dataset.f;view="folder";draw()});
+  } else if(view==="folder"){
+    const f=LIB[fI];
+    app.innerHTML=crumbs()+`<h2 class="fh">${f.icon} ${f.name}</h2>${weak().length?`<button class="review weakrev" data-m="-1" data-sc="weak"><span class="ic">📌</span><span><b>Still learning · ${weak().length}</b><small>Practise only the words you don't know yet, from all modules</small></span><span class="go">→</span></button>`:""}<button class="review" data-m="-1"><span class="ic">🔁</span><span><b>Review the whole folder</b><small>All ${f.modules.reduce((n,m)=>n+m.words.length,0)} words from every module, mixed</small>${pbar(prog(f,f.modules.flatMap(m=>m.words)))}</span><span class="go">→</span></button><div class="mods">${f.modules.map((m,i)=>`<button class="mod" data-m="${i}"><span class="ic">${m.icon}</span><span><b>${m.name}</b><small>Module · ${m.words.length} words</small>${pbar(prog(f,m.words))}</span><span class="go">→</span></button>`).join("")}</div>`;
+    bindCrumbs();
+    document.querySelectorAll(".mods [data-m], .review").forEach(b=>b.onclick=()=>{mI=+b.dataset.m;view="module";scope=b.dataset.sc||"all";draw()});
+  } else {
+    app.innerHTML=crumbs()+`<h2 class="fh">${M().icon} ${M().name}</h2>
+    <div class="row" id="scope"></div>
+    <div class="row frontsel" id="frontsel"></div>
+    <div class="tabs" role="tablist">
+      <button class="tab" data-mode="learn" role="tab">🧠 Learn<small>choose the word</small></button>
+      <button class="tab" data-mode="cards" role="tab">🃏 Flashcards<small>tap to flip</small></button>
+      <button class="tab" data-mode="gap" role="tab">✍️ Gap fill<small>write the word</small></button>
+      <button class="tab" data-mode="match" role="tab">⏱ Match<small>find the pairs</small></button>
+    </div><section class="panel" id="panel" aria-live="polite"></section><section class="weakbox" id="weakbox"></section>
+    <details><summary>All words in this module</summary><div class="list" style="margin-top:10px">${Wfull().map(w=>`<div><b>${w[0]}</b> <span>— ${w[1]}</span></div>`).join("")}</div></details>`;
+    bindCrumbs();
+    document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;store.set("mode",mode);runMode()});
+    runMode();
+  }
+  window.scrollTo({top:0});
+}
+function runMode(){clearInterval(mt);
+  document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===mode;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
+  scopeBar();frontBar();weakList();order=[];pos=0;flipped=false;onlyStars=false;known=[];unknown=[];hist=[];
+  if(mode==="learn")learnStart();else if(mode==="gap")gapStart();else if(mode==="match")matchStart();else cards();
+}
+function emptyWeak(){$("panel").innerHTML=`<div class="done"><b>Nothing here yet ✨</b><span>Words you mark <b>✗ Still learning</b> or get wrong will appear here.</span><button class="btn" id="toall">Study all words</button></div>`;$("toall").onclick=()=>{scope="all";runMode()}}
+function weakList(){const box=$("weakbox");if(!box)return;const t=weak(),here=Wfull().filter(w=>t.includes(w[0]));
+  box.innerHTML=`<div class="wh"><b>📌 Still learning · ${here.length}</b>${here.length?`<button class="btn ghost sm" id="wclear">Clear list</button>`:""}</div>`+(here.length?`<div class="list">${here.map(w=>`<div class="wi"><span><b>${w[0]}</b> <span>— ${w[1]}</span></span><button class="x" data-w="${w[0].replace(/"/g,'&quot;')}" aria-label="I know it now" title="I know it now">✓</button></div>`).join("")}</div>`:`<p class="hint" style="text-align:left;margin:0">Mark words with ✗ in Flashcards, or make a mistake in Learn or Gap fill, and they appear here.</p>`);
+  box.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{setWeak(b.dataset.w,false);weakList();scopeBar()});
+  if($("wclear"))$("wclear").onclick=()=>{here.forEach(w=>setWeak(w[0],false));weakList();scopeBar()}}
+function frontBar(){const fb=$("frontsel");if(!fb)return;fb.innerHTML=`<span class="lbl">Card front:</span><button class="chip ${front==="ru"?"on":""}" data-fr="ru">RU → EN</button><button class="chip ${front==="en"?"on":""}" data-fr="en">EN → RU</button>${mode==="gap"?`<span class="lbl">(Gap fill is always in English)</span>`:""}`;
+  fb.querySelectorAll("[data-fr]").forEach(b=>b.onclick=()=>{front=b.dataset.fr;store.set("front",front);runMode()})}
+function scopeBar(){const n=Wfull().filter(w=>weak().includes(w[0])).length;const sb=$("scope");if(!sb)return;
+  sb.innerHTML=`<button class="chip ${scope==="all"?"on":""}" data-sc="all">All words · ${Wfull().length}</button><button class="chip weakchip ${scope==="weak"?"on":""}" data-sc="weak">📌 Still learning · ${n}</button>`;
+  sb.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{scope=b.dataset.sc;runMode()})}
+function note(t){const p=document.createElement("p");p.className="fb bad";p.textContent=t;$("panel").appendChild(p);setTimeout(()=>p.remove(),2200)}
+
+/* Flashcards: sort into know / still learning */
+let order=[],pos=0,flipped=false,onlyStars=false,known=[],unknown=[],hist=[],RW=[];
+function cardsNew(list){RW=W().slice();order=list;pos=0;flipped=false;known=[];unknown=[];hist=[]}
+function cards(){
+  const st=stars();
+  if(!order.length){if(!W().length){emptyWeak();return}let pool=W().map((_,i)=>i);if(onlyStars&&st.length)pool=pool.filter(i=>st.includes(W()[i][0]));cardsNew(mI<0?shuffle(pool):pool)}
+  if(pos>=order.length){
+    $("panel").innerHTML=`<div class="done"><b>Round finished! 🎉</b>
+    <div class="sort"><span class="k">✓ Know: ${known.length}</span><span class="u">✗ Still learning: ${unknown.length}</span></div>
+    <div class="nav">${unknown.length?`<button class="btn" id="again2">Study the ${unknown.length} again</button>`:""}<button class="btn ghost" id="restart">Start over</button></div>
+    ${unknown.length?`<div class="list" style="width:100%;text-align:left">${unknown.map(i=>`<div><b>${RW[i][0]}</b> <span>— ${RW[i][1]}</span></div>`).join("")}</div>`:"<span>You know all the words! 🌟</span>"}</div>`;
+    if(unknown.length)$("again2").onclick=()=>{cardsNew(shuffle(unknown.slice()));cards()};
+    $("restart").onclick=()=>{order=[];cards()};return}
+  const i=order[pos],w=RW[i];
+  $("panel").innerHTML=`<div class="sort"><span class="u">✗ ${unknown.length}</span><span class="count">${pos+1} / ${order.length}</span><span class="k">✓ ${known.length}</span></div>
+  <button class="card" id="flip" aria-label="Flip the card">${front==="en"?(flipped?ruBack(w):enFront(w)):(flipped?`<div class="back">${w[0]}</div>`:prompt(w))}</button>
+  <p class="hint">${flipped?"Tap to see the front again":front==="en"?"Tap the card to see the translation":"Tap the card to see the English word"}</p>
+  <div class="nav"><button class="kbtn u" id="no">✗ Still learning</button><button class="kbtn k" id="yes">✓ I know it</button></div>
+  <div class="nav"><button class="round" id="undo" aria-label="Back" ${hist.length?"":"disabled"}>↶</button><button class="round" id="speak" aria-label="Listen">🔊</button><button class="round star ${st.includes(w[0])?"on":""}" id="star" aria-label="Star this word">★</button>
+  <button class="btn ghost" id="mix">Shuffle</button><button class="btn ghost" id="onlyst">${onlyStars?"All words":"Only ★ words"}</button></div>`;
+  $("flip").onclick=()=>{flipped=!flipped;cards()};
+  if(front==="en"&&!flipped&&!cards.spoke){cards.spoke=1;setTimeout(()=>cards.spoke=0,50)}
+  const mark=k=>{(k?known:unknown).push(i);setWeak(w[0],!k);weakList();scopeBar();hist.push(k);pos++;flipped=false;cards()};
+  $("yes").onclick=()=>mark(true);$("no").onclick=()=>mark(false);
+  $("undo").onclick=()=>{if(!hist.length)return;const k=hist.pop();(k?known:unknown).pop();pos--;flipped=false;cards()};
+  $("speak").onclick=()=>say(w[0]);
+  $("star").onclick=()=>{let s=stars();s=s.includes(w[0])?s.filter(x=>x!==w[0]):[...s,w[0]];store.set(key(),s);cards()};
+  $("mix").onclick=()=>{cardsNew(shuffle(order.slice()));cards()};
+  $("onlyst").onclick=()=>{if(!onlyStars&&!stars().length){note("Tap ★ on some cards first.");return}onlyStars=!onlyStars;order=[];cards()};
+}
+/* Learn */
+let q=[],learned=0,total=0,LW=[];
+function learnStart(){if(!W().length){emptyWeak();return}LW=W().slice();q=shuffle(LW.map((_,i)=>i));learned=0;total=q.length;learn()}
+function learn(){
+  if(!q.length){$("panel").innerHTML=`<div class="done"><b>All learned! 🎉</b><span>You know all ${total} words.</span><button class="btn" id="again">Learn again</button></div>`;$("again").onclick=learnStart;return}
+  const i=q[0],w=LW[i];
+  const opts=shuffle([i,...shuffle(LW.map((_,k)=>k).filter(k=>k!==i)).slice(0,3)]);
+  $("panel").innerHTML=`<div class="bar"><i style="width:${learned/total*100}%"></i></div><p class="hint">${learned} / ${total} learned</p>
+  <div class="card" style="cursor:default">${front==="en"?enFront(w):prompt(w)}</div>
+  <div class="nav"><button class="round" id="spk" aria-label="Listen">🔊</button></div>
+  <div class="opts">${opts.map(k=>`<button class="opt" data-k="${k}">${LW[k][front==="en"?1:0]}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+  $("spk").onclick=()=>say(w[0]);
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.k===i)x.classList.add("ok")});
+    const ok=+b.dataset.k===i;q.shift();
+    if(ok){learned++;if(!weak().includes(w[0]))setWeak(w[0],false);$("fb").className="fb ok";$("fb").textContent="Correct! ✨"}
+    else{b.classList.add("bad");setWeak(w[0],true);weakList();scopeBar();q.splice(Math.min(3,q.length),0,i);$("fb").className="fb bad";$("fb").textContent="Not quite. You'll see this word again soon."}
+    setTimeout(learn,ok?900:1800);
+  });
+}
+/* Match game */
+let mt=null,mStart=0,mSel=null,mLeft=0,mPen=0;
+const bestKey=()=>"best_"+LIB[fI].name+"_"+M().name+"_"+scope;
+function matchStart(){
+  clearInterval(mt);if(W().length<2){emptyWeak();return}
+  const pick=shuffle(W().map((_,i)=>i)).slice(0,6),MW=W();
+  const tiles=shuffle(pick.flatMap(i=>[{i,t:MW[i][0],en:1},{i,t:MW[i][1],en:0}]));
+  mLeft=pick.length;mSel=null;mPen=0;const best=store.get(bestKey(),null);
+  $("panel").innerHTML=`<div class="sort"><span class="timer" id="mtime">0.0 s</span><span class="count">Best: ${best?best.toFixed(1)+" s":"—"}</span></div>
+  <p class="hint">Tap an English word, then its translation. A wrong pair adds 1 second!</p>
+  <div class="mgrid">${tiles.map((x,k)=>`<button class="mt ${x.en?"en":""}" data-i="${x.i}" data-k="${k}">${x.t}</button>`).join("")}</div>
+  <div class="nav"><button class="btn ghost" id="mre">New game</button></div>`;
+  mStart=performance.now();mt=setInterval(()=>{const e=$("mtime");if(!e){clearInterval(mt);return}e.textContent=((performance.now()-mStart)/1000+mPen).toFixed(1)+" s"},100);
+  $("mre").onclick=matchStart;
+  document.querySelectorAll(".mt").forEach(b=>b.onclick=()=>{
+    if(b.classList.contains("gone"))return;
+    if(!mSel){mSel=b;b.classList.add("sel");return}
+    if(mSel===b){b.classList.remove("sel");mSel=null;return}
+    const a=mSel;mSel=null;a.classList.remove("sel");
+    if(a.dataset.i===b.dataset.i&&a.classList.contains("en")!==b.classList.contains("en")){
+      [a,b].forEach(x=>{x.classList.add("good");setTimeout(()=>x.classList.add("gone"),250)});
+      if(--mLeft===0){clearInterval(mt);const t=(performance.now()-mStart)/1000+mPen;const old=store.get(bestKey(),null);const nb=!old||t<old;if(nb)store.set(bestKey(),t);
+        setTimeout(()=>{$("panel").innerHTML=`<div class="done"><b>${t.toFixed(1)} seconds!</b><span>${nb?"🏆 New best time!":"Best: "+old.toFixed(1)+" s"}</span><button class="btn" id="mag">Play again</button></div>`;$("mag").onclick=matchStart},350)}
+    } else {mPen+=1;[a,b].forEach(x=>{x.classList.add("wrong");setTimeout(()=>x.classList.remove("wrong"),450)})}
+  });
+}
+/* Gap fill */
+let g=[],gp=0,gok=0,GW=[];
+function gapStart(){if(!W().length){emptyWeak();return}GW=W().slice();g=shuffle(GW.map((_,i)=>i));gp=0;gok=0;gap()}
+function gap(){
+  if(gp>=g.length){$("panel").innerHTML=`<div class="done"><b>${gok} / ${g.length}</b><span>${gok===g.length?"Perfect! 🌟":"Great job! Try again to get them all."}</span><button class="btn" id="again">Start again</button></div>`;$("again").onclick=gapStart;return}
+  const i=g[gp],w=GW[i],ans=w[3].split("|");
+  $("panel").innerHTML=`<div class="bar"><i style="width:${gp/g.length*100}%"></i></div><p class="hint">${gp+1} / ${g.length} · correct: ${gok}</p>
+  <div class="card" style="cursor:default">${prompt(w)}</div>
+  <form class="nav" id="gf"><input class="gapin" id="gi" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Write the missing word" placeholder="write the word"><button class="btn" type="submit">Check</button></form>
+  <div class="fb" id="fb"></div><div class="nav"><button class="round" id="spk" aria-label="Listen">🔊</button><button class="btn ghost" id="skip">Show answer</button></div>`;
+  const inp=$("gi");let checked=false;$("spk").onclick=()=>say(w[0]);const next=()=>{gp++;gap()};
+  const show=ok=>{checked=true;weakList();scopeBar();inp.classList.add(ok?"ok":"bad");$("fb").className="fb "+(ok?"ok":"bad");$("fb").innerHTML=(ok?"Correct! ✨":"Answer:")+`<div class="full"><span class="ex">${filled(w)}</span><span class="term">${w[0]} — ${w[1]}</span></div>`;document.querySelector("#gf .btn").textContent="Next →"};
+  $("gf").onsubmit=e=>{e.preventDefault();if(checked){next();return}if(!inp.value.trim())return;const ok=ans.some(a=>norm(a)===norm(inp.value));if(ok){gok++;if(!weak().includes(w[0]))setWeak(w[0],false)}else setWeak(w[0],true);show(ok)};
+  $("skip").onclick=()=>{if(checked){next();return}inp.value=ans[0];setWeak(w[0],true);show(false)};
+}
+const saved=store.get("pos",null);
+if(saved&&OK.includes(saved.fI)&&(saved.view!=="module"||saved.mI<0||LIB[saved.fI].modules[saved.mI])){view=saved.view;fI=saved.fI;mI=saved.mI??0}
+window.addEventListener("hashchange",()=>{access();view="home";scope="all";draw()});
+draw();
+
+</script>
+</body></html>
