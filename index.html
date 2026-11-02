@@ -139,6 +139,21 @@ details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .bsw{justify-content:center;margin-bottom:10px}
 .kbtn:not(.k):not(.u){border-color:var(--line);background:var(--paper);color:var(--ink)}
 .kbtn:disabled{opacity:.4;cursor:default}
+.tabs .tab[data-mode="test"]{grid-column:span 2}
+@media (min-width:601px){.tabs .tab[data-mode="test"]{grid-column:span 1}}
+.bline{min-height:58px;border-bottom:2px dashed var(--line);display:flex;flex-wrap:wrap;gap:8px;padding:8px 2px;justify-content:center;align-items:center;margin-bottom:12px}
+.bph{color:var(--muted);font-style:italic}
+.bpool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px}
+.tok{border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 12px;font-weight:600;font-size:17px;color:var(--ink);font-family:inherit}
+.tok.gone{opacity:.2}
+.bline.ok .tok{border-color:var(--ok);background:var(--ok-soft)}.bline.bad .tok{border-color:var(--bad);background:var(--bad-soft)}
+.btn:disabled{opacity:.4;cursor:default}
+.mic{width:88px;height:88px;border-radius:50%;font-size:38px;border:3px solid var(--esp);background:var(--pink);cursor:pointer}
+.mic.rec{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(244,201,214,.9)}50%{box-shadow:0 0 0 16px rgba(244,201,214,0)}}
+.heard{text-align:center;color:var(--muted);min-height:1.3em;margin:6px 0}
+.send{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%}.send .gapin{width:min(220px,100%);font-size:18px}
+.done .list b{font-size:17px;font-weight:700}
 </style></head><body>
 <div class="wrap">
   <header class="hero">
@@ -825,6 +840,9 @@ function draw(){clearInterval(mt);
       <button class="tab" data-mode="cards" role="tab">🃏 Flashcards<small>tap to flip</small></button>
       <button class="tab" data-mode="gap" role="tab">✍️ Gap fill<small>write the word</small></button>
       <button class="tab" data-mode="match" role="tab">⏱ Match<small>find the pairs</small></button>
+      <button class="tab" data-mode="build" role="tab">🧩 Build<small>make the sentence</small></button>
+      <button class="tab" data-mode="say" role="tab">🎤 Say it<small>speak the word</small></button>
+      <button class="tab" data-mode="test" role="tab">🏆 Test<small>check yourself</small></button>
     </div><section class="panel" id="panel" aria-live="polite"></section><section class="weakbox" id="weakbox"></section>
     <details><summary>All words in this module</summary><div class="list" style="margin-top:10px">${Wfull().map(w=>`<div><b>${w[0]}</b> <span>— ${w[1]}</span></div>`).join("")}</div></details>`;
     bindCrumbs();
@@ -836,7 +854,7 @@ function draw(){clearInterval(mt);
 function runMode(){clearInterval(mt);
   document.querySelectorAll("[data-mode]").forEach(b=>{const on=b.dataset.mode===mode;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
   scopeBar();frontBar();weakList();order=[];pos=0;flipped=false;onlyStars=false;known=[];unknown=[];hist=[];
-  if(mode==="learn")learnStart();else if(mode==="gap")gapStart();else if(mode==="match")matchStart();else cards();
+  if(mode==="learn")learnStart();else if(mode==="gap")gapStart();else if(mode==="match")matchStart();else if(mode==="build"||mode==="say"||mode==="test")seqStart(mode);else cards();
 }
 function emptyWeak(){$("panel").innerHTML=`<div class="done"><b>Nothing here yet ✨</b><span>Words you mark <b>✗ Still learning</b> or get wrong will appear here.</span><button class="btn" id="toall">Study all words</button></div>`;$("toall").onclick=()=>{scope="all";runMode()}}
 function weakList(){const box=$("weakbox");if(!box)return;const t=weak(),here=Wfull().filter(w=>t.includes(w[0]));
@@ -953,6 +971,101 @@ function gap(){
   $("gf").onsubmit=e=>{e.preventDefault();if(checked){next();return}if(!inp.value.trim())return;const ok=ans.some(a=>norm(a)===norm(inp.value));if(ok){gok++;if(!weak().includes(w[0]))setWeak(w[0],false)}else setWeak(w[0],true);show(ok)};
   $("skip").onclick=()=>{if(checked){next();return}inp.value=ans[0];setWeak(w[0],true);show(false)};
 }
+/* ===== Build / Say it / Test ===== */
+const markW=(w,ok)=>{if(ok){if(!weak().includes(w[0]))setWeak(w[0],false)}else setWeak(w[0],true);weakList();scopeBar()};
+const copyTxt=t=>{try{navigator.clipboard.writeText(t).catch(()=>prompt2(t))}catch(e){prompt2(t)}};
+const escA=t=>String(t).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+function sentenceOf(w){let ex=w[2],hint="";ex=ex.replace(/\s*\(([^)]*)\)/g,(m,h)=>{hint=h;return""}).trim();
+  if(ex.split(/\s+/).length>11){const ps=ex.split(/(?<=[.!?])\s+/);ex=ps.find(p=>p.includes("___"))||ex}
+  return{s:ex.replace(/___( ___)*/,w[3].split("|")[0]),hint}}
+function qBuild(w,el,done){
+  const {s,hint}=sentenceOf(w),toks=s.split(/\s+/).filter(t=>t&&t!=="—");
+  let pool=shuffle(toks.map((_,i)=>i));if(toks.length>1&&pool.every((v,i)=>toks[v]===toks[i]))pool.reverse();
+  let picked=[],checked=false,ok=false;
+  const render=()=>{
+    const full=picked.length===toks.length;
+    el.innerHTML=`<div class="card" style="cursor:default"><div class="txt"><div class="ru">${w[1]}</div>${hint?`<div class="ex">(${hint})</div>`:""}</div><div class="pic">${pic(w)}</div></div>
+    <p class="hint">${checked?"":"Tap the words in the right order. Tap a word again to take it back."}</p>
+    <div class="bline ${checked?(ok?"ok":"bad"):""}">${picked.map((k,j)=>`<button class="tok" data-j="${j}" ${checked?"disabled":""}>${toks[k]}</button>`).join("")||`<span class="bph">your sentence</span>`}</div>
+    ${checked?(ok?`<div class="fb ok">Correct! ✨</div>`:`<div class="fb bad">Correct sentence:<div class="full"><span class="ex">${s}</span></div></div>`):`<div class="bpool">${pool.map(k=>picked.includes(k)?`<span class="tok gone">${toks[k]}</span>`:`<button class="tok" data-p="${k}">${toks[k]}</button>`).join("")}</div>`}
+    <div class="nav"><button class="round" id="bspk" aria-label="Listen">🔊</button>${checked?`<button class="btn" id="bnext">Next →</button>`:`<button class="btn ghost" id="bskip">Show answer</button><button class="btn" id="bchk" ${full?"":"disabled"}>Check</button>`}</div>`;
+    $("bspk").onclick=()=>say(checked?s:w[0]);
+    el.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{picked.push(+b.dataset.p);render()});
+    el.querySelectorAll("[data-j]").forEach(b=>b.onclick=()=>{picked.splice(+b.dataset.j,1);render()});
+    if(checked){$("bnext").onclick=()=>done(ok);return}
+    $("bchk").onclick=()=>{ok=picked.map(k=>toks[k]).join(" ")===toks.join(" ");checked=true;markW(w,ok);render()};
+    $("bskip").onclick=()=>{picked=toks.map((_,i)=>i);ok=false;checked=true;markW(w,false);render()};
+  };render()}
+function qChoice(w,el,done){
+  const en=Math.random()<.5,opts=shuffle([w,...shuffle(SW.filter(x=>x!==w)).slice(0,3)]);
+  el.innerHTML=`<div class="card" style="cursor:default">${en?enFront(w):prompt(w)}</div><p class="hint">${en?"Choose the translation":"Choose the English word"}</p><div class="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${o[en?1:0]}</button>`).join("")}</div><div class="fb" id="cfb"></div>`;
+  el.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{const ok=opts[+b.dataset.k]===w;
+    el.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(opts[+x.dataset.k]===w)x.classList.add("ok")});if(!ok)b.classList.add("bad");
+    markW(w,ok);$("cfb").className="fb "+(ok?"ok":"bad");$("cfb").textContent=ok?"Correct! ✨":"Not quite.";setTimeout(()=>done(ok),ok?800:1700)})}
+function qWrite(w,el,done){
+  const ans=w[3].split("|");let checked=false,ok=false;
+  el.innerHTML=`<div class="card" style="cursor:default">${prompt(w)}</div><p class="hint">Write the missing words</p>
+  <form class="nav" id="wf"><input class="gapin" id="wi" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Write the missing word" placeholder="write the word"><button class="btn" type="submit">Check</button></form>
+  <div class="fb" id="wfb"></div><div class="nav"><button class="btn ghost" id="wskip">I don't know</button></div>`;
+  const inp=$("wi");
+  const show=()=>{checked=true;markW(w,ok);inp.classList.add(ok?"ok":"bad");$("wfb").className="fb "+(ok?"ok":"bad");$("wfb").innerHTML=(ok?"Correct! ✨":"Answer:")+`<div class="full"><span class="ex">${filled(w)}</span><span class="term">${w[0]} — ${w[1]}</span></div>`;el.querySelector("#wf .btn").textContent="Next →";$("wskip").remove()};
+  $("wf").onsubmit=e=>{e.preventDefault();if(checked){done(ok);return}if(!inp.value.trim())return;ok=ans.some(a=>norm(a)===norm(inp.value));show()};
+  $("wskip").onclick=()=>{inp.value=ans[0];ok=false;show()}}
+/* Say it */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let sayFallback=false;
+const NW="zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split(" "),TW={2:"twenty",3:"thirty",4:"forty",5:"fifty"};
+const nw=n=>n<20?NW[n]:TW[Math.floor(n/10)]+(n%10?" "+NW[n%10]:"");
+const sn=s=>norm(s.replace(/\b([a-z])\.\s?([a-z])\./gi,"$1$2").replace(/\b(\d{1,2}):(\d{2})\b/g,(m,h,mm)=>nw(+h)+" "+(+mm?nw(+mm):"o'clock")).replace(/\b\d{1,2}\b/g,m=>nw(+m)));
+function qSay(w,el,done){
+  const self=!SR||sayFallback;
+  const T=[...w[0].split(/\s*\/\s*/),...w[3].split("|")].map(t=>sn(t.replace(/\.\.\.|…|\([^)]*\)|___/g," "))).filter(Boolean);
+  let tries=0,fin=false;
+  el.innerHTML=`<div class="card" style="cursor:default">${prompt(w)}</div>
+  <p class="hint">${self?"Say the English word out loud, then check yourself":"Tap the microphone and say the English word"}</p>
+  ${self?"":`<div class="nav"><button class="mic" id="mic" aria-label="Speak">🎤</button></div>`}<p class="heard" id="heard"></p><div class="fb" id="sfb"></div>
+  <div class="nav" id="snav"><button class="btn ${self?"":"ghost"}" id="sshow">${self?"Check the answer":"Show answer"}</button></div>`;
+  const answer=`<div class="full"><span class="term">${w[0]} — ${w[1]}</span></div>`;
+  const end=ok=>{fin=true;markW(w,ok);$("sfb").className="fb "+(ok?"ok":"bad");$("sfb").innerHTML=(ok?"Correct! ✨":"Answer:")+answer;
+    $("snav").innerHTML=`<button class="round" id="sspk" aria-label="Listen">🔊</button><button class="btn" id="snext">Next →</button>`;$("sspk").onclick=()=>say(w[0]);$("snext").onclick=()=>done(ok)};
+  $("sshow").onclick=()=>{if(!self){end(false);return}
+    $("sfb").className="fb";$("sfb").innerHTML="Did you say it right?"+answer;
+    $("snav").innerHTML=`<button class="round" id="sspk" aria-label="Listen">🔊</button><button class="kbtn u" id="sn">✗ Not quite</button><button class="kbtn k" id="sy">✓ I said it</button>`;
+    $("sspk").onclick=()=>say(w[0]);$("sy").onclick=()=>done((markW(w,true),true));$("sn").onclick=()=>done((markW(w,false),false))};
+  if(self)return;
+  $("mic").onclick=()=>{if(fin)return;const m=$("mic");let r;try{r=new SR()}catch(e){sayFallback=true;qSay(w,el,done);return}
+    r.lang="en-US";r.maxAlternatives=5;r.interimResults=false;m.classList.add("rec");$("heard").textContent="Listening…";
+    r.onresult=e=>{const alts=[...e.results[0]].map(a=>a.transcript);$("heard").textContent=`You said: “${alts[0]}”`;
+      const ok=alts.some(a=>{const n=" "+sn(a)+" ";return T.some(t=>n.includes(" "+t+" "))});
+      if(ok)end(true);else{tries++;if(tries>=3)end(false);else{$("sfb").className="fb bad";$("sfb").textContent="Not quite — try again!"}}};
+    r.onerror=e=>{m.classList.remove("rec");
+      if(e.error==="service-not-allowed"||e.error==="language-not-supported"){sayFallback=true;$("heard").textContent="Voice check doesn't work in this browser. You can check yourself.";setTimeout(()=>qSay(w,el,done),1800)}
+      else $("heard").textContent=e.error==="not-allowed"?"Please allow the microphone for this site and try again.":e.error==="no-speech"?"I didn't hear anything. Try again.":"Something went wrong. Try again."};
+    r.onend=()=>m.classList.remove("rec");
+    try{r.start()}catch(e){m.classList.remove("rec")}}}
+/* runner */
+let SQ=[],sp=0,sok=0,SW=[],smiss=[],skind="";
+function seqStart(kind){if(!W().length){emptyWeak();return}skind=kind;SW=W().slice();
+  let idx=shuffle(SW.map((_,i)=>i));
+  if(kind==="test"){idx=idx.slice(0,Math.min(12,idx.length));const types=["choice","write","build"];SQ=idx.map((i,j)=>({i,t:types[j%3]}));SQ=shuffle(SQ)}
+  else SQ=idx.map(i=>({i,t:kind}));
+  sp=0;sok=0;smiss=[];seq()}
+function seq(){if(sp>=SQ.length){seqEnd();return}
+  const {i,t}=SQ[sp],w=SW[i],kind=skind;
+  $("panel").innerHTML=`${kind==="test"?`<p class="gname" style="text-align:center">🏆 Test</p>`:""}<div class="bar"><i style="width:${sp/SQ.length*100}%"></i></div><p class="hint">${sp+1} / ${SQ.length} · correct: ${sok}</p><div id="qbox" class="qbox"></div>`;
+  ({choice:qChoice,write:qWrite,build:qBuild,say:qSay})[t](w,$("qbox"),ok=>{if(skind!==kind||mode!==kind)return;if(ok)sok++;else smiss.push(w);sp++;seq()})}
+function seqEnd(){const kind=skind,n=SQ.length,p=Math.round(sok/n*100),miss=[...new Set(smiss)];
+  const msg=p===100?"Perfect! 🌟":p>=80?"Great job! 💪":p>=50?"Good try! Practise the words below.":"Keep practising — you can do it! 💛";
+  $("panel").innerHTML=`<div class="done"><b>${kind==="test"?"Your result: ":""}${sok} / ${n}</b><span>${msg}</span>
+  ${kind==="test"?`<div class="send"><input class="gapin" id="tname" placeholder="Your name" value="${escA(store.get("myname",""))}"><button class="btn" id="tsend">📤 Send to teacher</button></div><p class="hint" style="margin:0">Write your name and tap the button. Then paste your result in the chat with your teacher.</p>`:""}
+  <button class="btn ${kind==="test"?"ghost":""}" id="again">${kind==="test"?"Take the test again":"Start again"}</button>
+  ${miss.length?`<span>Words to practise:</span><div class="list" style="width:100%;text-align:left">${miss.map(w=>`<div><b>${w[0]}</b> <span>— ${w[1]}</span></div>`).join("")}</div>`:""}</div>`;
+  $("again").onclick=()=>seqStart(kind);
+  if(kind!=="test")return;
+  $("tsend").onclick=()=>{const nm=$("tname").value.trim();if(!nm){note("Write your name first.");$("tname").focus();return}store.set("myname",nm);const d=new Date();
+    const txt=`📝 Word Cards test\n${nm}\n${LIB[fI].name} › ${M().name}\nScore: ${sok}/${n} (${p}%)\n${miss.length?"Mistakes: "+miss.map(w=>w[0]).join(", "):"No mistakes! 🌟"}\n${d.toLocaleDateString("ru-RU")} ${d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}`;
+    copyTxt(txt);$("tsend").textContent="Copied ✓";
+    if(navigator.share&&/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent))navigator.share({text:txt}).catch(()=>{});
+    else note("Copied! Now paste it in the chat with your teacher.")}}
 const saved=store.get("pos",null);
 if(saved&&OK.includes(saved.fI)&&(saved.view!=="module"||saved.mI<0||LIB[saved.fI].modules[saved.mI])){view=saved.view;fI=saved.fI;mI=saved.mI??0}
 window.addEventListener("hashchange",()=>{access();view="home";scope="all";draw()});
