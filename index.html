@@ -1381,6 +1381,250 @@ const LIB=[
 "👯"
 ]
 ]
+},
+{
+"name": "2. Personality adjectives & Zodiac signs",
+"icon": "🧩",
+"words": [
+[
+"affectionate",
+"showing love and care for other people",
+"My grandma is very ___ — she always hugs everyone.",
+"affectionate",
+"🤗"
+],
+[
+"ambitious",
+"wanting to be successful and achieve big goals",
+"Anna is really ___. She wants to become a CEO before she's 30.",
+"ambitious",
+"🚀"
+],
+[
+"anxious",
+"feeling worried or nervous about something",
+"I felt ___ before my driving test.",
+"anxious",
+"😰"
+],
+[
+"bossy",
+"always telling other people what to do",
+"Our team leader is so ___ — nobody can make their own decisions.",
+"bossy",
+"📢"
+],
+[
+"charming",
+"pleasant and attractive in a way that makes people like you",
+"He was so ___ that everyone at the party liked him immediately.",
+"charming",
+"✨"
+],
+[
+"competitive",
+"wanting to win or be better than others",
+"My brother is very ___ — he hates losing games.",
+"competitive",
+"🏆"
+],
+[
+"honest",
+"always telling the truth",
+"Be ___ and tell me what really happened.",
+"honest",
+"✅"
+],
+[
+"imaginative",
+"having lots of creative and original ideas",
+"Children are often very ___ when they play.",
+"imaginative",
+"🎨"
+],
+[
+"independent",
+"able to do things without help from other people",
+"She moved abroad alone because she's very ___.",
+"independent",
+"🧳"
+],
+[
+"insecure",
+"not confident about yourself or your abilities",
+"He felt ___ speaking in front of the class.",
+"insecure",
+"😟"
+],
+[
+"mature",
+"behaving like a sensible adult",
+"For a teenager, she's very ___.",
+"mature",
+"🧑‍💼"
+],
+[
+"moody",
+"having emotions that change quickly and often",
+"Don't take it personally — he's just feeling ___ today.",
+"moody",
+"🎭"
+],
+[
+"patient",
+"able to stay calm without getting angry or upset",
+"Teachers need to be very ___ with young children.",
+"patient",
+"⏳"
+],
+[
+"rebellious",
+"not liking rules or authority; wanting to do the opposite",
+"As a teenager, he was very ___ and argued with his parents a lot.",
+"rebellious",
+"🤘"
+],
+[
+"reliable",
+"someone you can trust to do what they promise",
+"You can always count on Kate — she's very ___.",
+"reliable",
+"🤝"
+],
+[
+"self-confident",
+"feeling sure about yourself and your abilities",
+"She looked calm and ___ during the interview.",
+"self-confident|self confident",
+"😎"
+],
+[
+"selfish",
+"caring only about yourself and not about other people",
+"It was ___ of him not to share the food.",
+"selfish",
+"🙅"
+],
+[
+"sensible",
+"practical and showing good judgment",
+"Let's make a ___ decision and save some money.",
+"sensible",
+"🧠"
+],
+[
+"sensitive",
+"easily affected emotionally; understanding other people's feelings",
+"He's very ___, so be careful with your words.",
+"sensitive",
+"🥺"
+],
+[
+"sociable",
+"enjoying spending time with other people",
+"Emma is really ___ and makes friends easily.",
+"sociable",
+"🥳"
+],
+[
+"spoiled",
+"expecting everything because you get whatever you want",
+"Their son is a bit ___ — he never hears the word \"no\".",
+"spoiled",
+"👑"
+],
+[
+"stubborn",
+"refusing to change your opinion or behavior",
+"My dad is too ___ to ask for directions.",
+"stubborn",
+"🐂"
+],
+[
+"Aries",
+"Овен",
+"",
+"Aries",
+"♈️"
+],
+[
+"Taurus",
+"Телец",
+"",
+"Taurus",
+"♉️"
+],
+[
+"Gemini",
+"Близнецы",
+"",
+"Gemini",
+"♊️"
+],
+[
+"Cancer",
+"Рак",
+"",
+"Cancer",
+"♋️"
+],
+[
+"Leo",
+"Лев",
+"",
+"Leo",
+"♌️"
+],
+[
+"Virgo",
+"Дева",
+"",
+"Virgo",
+"♍️"
+],
+[
+"Libra",
+"Весы",
+"",
+"Libra",
+"♎️"
+],
+[
+"Scorpio",
+"Скорпион",
+"",
+"Scorpio",
+"♏️"
+],
+[
+"Sagittarius",
+"Стрелец",
+"",
+"Sagittarius",
+"♐️"
+],
+[
+"Capricorn",
+"Козерог",
+"",
+"Capricorn",
+"♑️"
+],
+[
+"Aquarius",
+"Водолей",
+"",
+"Aquarius",
+"♒️"
+],
+[
+"Pisces",
+"Рыбы",
+"",
+"Pisces",
+"♓️"
+]
+]
 }
 ]
 }
@@ -1410,11 +1654,13 @@ const sub=w=>w[1]?` — ${w[1]}`:"";
 const tt=w=>w[0]+(w[1]?` — <b>${w[1]}</b>`:"");
 const hasEx=w=>!!(w[2]&&w[2].includes("___"));
 const frontEff=()=>front;
-const EO=()=>!M().words.some(w=>/[а-яё]/i.test(w[1]||"")); /* English-only module: clues are pictures/definitions */
+const isRu=w=>/[а-яё]/i.test(w[1]||"");
+const EO=()=>M().words.filter(isRu).length<M().words.length/2;
+const kindOf=w=>isRu(w)?2:(w[1]?1:0); /* English-only module: clues are pictures/definitions */
 const dfn=w=>w[1]?`<div class="${(/[а-яё]/i.test(w[1])||w[1].length<=34)?"ru":"df"}">${w[1]}</div>`:"";
 const optLab=(w,en)=>en?(w[1]||pic(w)):w[0];
 const kindOpts=(i,all,en)=>{const w=all[i],others=shuffle(all.map((_,k)=>k).filter(k=>k!==i));
-  const same=en?others.filter(k=>!!all[k][1]===!!w[1]):others;
+  const same=en?others.filter(k=>kindOf(all[k])===kindOf(w)):others;
   return shuffle([i,...[...same,...others.filter(k=>!same.includes(k))].slice(0,3)])};
 const noIPA=t=>t.replace(/\s*\/[^\/]*[ˈˌəæɪʊɔɑɜːθðŋʃʒ][^\/]*\//g,"").trim();
 const enFront=w=>EO()?`<div class="back" lang="en" style="font-size:clamp(28px,7vw,48px)">${w[0]}</div>`:`<div class="txt"><div class="ru" lang="en">${w[0]}</div></div><div class="pic">${pic(w)}</div>`;
