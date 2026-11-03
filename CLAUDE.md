@@ -14,7 +14,7 @@ Talk to her in Russian. She is not a developer: explain in plain words, no code 
 - `#b1-m4x9` — B1 group (American English File Intermediate): Olga, Rita, Mary → folder 1 "Food".
 - `#teacher-7nq4` — teacher. Opening it once remembers the teacher in that browser; then the bare
   site URL shows the "My groups" dashboard (groups, students, Copy link buttons).
-- `#irina-r5w8` — individual student Irina (group "Irina") → folders 2 "1A. Eating in and out" and 3 "1B. Family & Personality"
+- `#irina-r5w8` — individual student Irina (group "Irina") → folders 2 "1A. Eating in and out" 3 "1B. Family & Personality" and 4 "E1. Practical English – Meeting the parents"
   (she is a bit ahead of the program; her materials can later be opened to other groups via `folders`).
 - Without a code students see "Please open the link your teacher sent you".
 - Individual students: add an entry to `GROUPS` with its own code, `name`, `icon`, `students`, `folders`.
@@ -32,6 +32,8 @@ Folders → modules → words. A word is
   field 1 may hold her English definition, field 2 only her own examples; cottage cheese / cream cheese / yummy / gross still use emoji);
   module 2. Cooking (25 words, her Quizlet + 16 photos, same picture-only style, plus Claude-written examples for the 12 cooking verbs; recipe, eat out, cut down on, cut out, pig out, dig in use emoji). Folder 3 "1B. Family & Personality" (Irina): module 1. Family (11 words, her definitions only, emoji pictures until she sends photos),
   module 2. Personality adjectives & Zodiac signs (22 adjectives with her definitions + examples, 12 zodiac signs with her Russian names; emoji pictures).
+  Folder 4 "E1. Practical English – Meeting the parents" (standalone, folder with one module "Reacting & Social English"): 17 phrases made by Claude
+  from her lesson screenshots (9 reactions + 8 highlighted Social English phrases), Claude-written definitions/examples, emoji pictures.
   Folder 1 "Food" (B1) was written by Claude from lessons,
   not from her Quizlet yet.
 
