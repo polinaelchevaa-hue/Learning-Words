@@ -14,7 +14,7 @@ Talk to her in Russian. She is not a developer: explain in plain words, no code 
 - `#b1-m4x9` — B1 group (American English File Intermediate): Olga, Rita, Mary → folder 1 "Food".
 - `#teacher-7nq4` — teacher. Opening it once remembers the teacher in that browser; then the bare
   site URL shows the "My groups" dashboard (groups, students, Copy link buttons).
-- `#irina-r5w8` — individual student Irina (group "Irina") → folders 2 "1A. Eating in and out" 3 "1B. Family & Personality" 4 "E1. Practical English – Meeting the parents" and 5 "2A. Money"
+- `#irina-r5w8` — individual student Irina (group "Irina") → folders 2 "1A. Eating in and out" 3 "1B. Family & Personality" 4 "E1. Practical English – Meeting the parents" 5 "2A. Money" and 6 "2B. Changing lives"
   (she is a bit ahead of the program; her materials can later be opened to other groups via `folders`).
 - Without a code students see "Please open the link your teacher sent you".
 - Individual students: add an entry to `GROUPS` with its own code, `name`, `icon`, `students`, `folders`.
@@ -36,6 +36,7 @@ Folders → modules → words. A word is
   from her lesson screenshots (9 reactions + 8 highlighted Social English phrases), Claude-written definitions/examples, emoji pictures.
   Folder 5 "2A. Money" (Irina): module 1. Money (34: 25 words with her definitions/examples + 9 preposition/collocation cards like "pay by"; emoji pictures;
   gaps with suffixes were reworded, e.g. "saving", "cost" has one gap).
+  Folder 6 "2B. Changing lives" (Irina): module 1. Charity (7 cards; "alongside" is 3 cards with 3 meanings, named alongside (1)/(2)/(3)).
   Folder 1 "Food" (B1) was written by Claude from lessons,
   not from her Quizlet yet.
 
