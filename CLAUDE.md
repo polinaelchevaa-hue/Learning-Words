@@ -39,6 +39,11 @@ If field 1 (Russian) is empty the card shows the picture + "What is it?"; Match 
 words without an example; the RU/EN front switch is hidden in such modules. Transcription like `/læm/` in the
 English field is ignored by the voice (`noIPA`). Polina does NOT want Russian translations for B1 students.
 
+## Styling rule
+Definitions (and Russian translations) are always bold; examples are always italic.
+Card front switch: in modules with Russian → "RU → EN / EN → RU"; in English-only modules (no Cyrillic in field 1)
+→ "Picture / definition → Word / Word → Picture / definition" (`EO()` in index.html).
+
 ## Modes
 Learn · Flashcards (Flip through / Sort ✓✗, star, shuffle) · Gap fill · Match · Build (sentence from
 words) · Spell it (letters in order, ≤16 letters) · Test (12 mixed: choice, write, build, spell;

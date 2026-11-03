@@ -59,7 +59,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .done b{font-family:var(--display);font-style:italic;font-size:34px;color:var(--lime)}
 .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;font-size:15px}
 .list div{background:var(--bg);border-radius:10px;padding:6px 10px}
-.list span{color:var(--muted)}
+.list span{color:var(--muted);font-weight:700}
+.df{font-weight:700;font-size:clamp(17px,3.6vw,22px);line-height:1.35}
+.opt img{height:70px;border-radius:8px;display:block;margin:0 auto}
+.full .term b{font-weight:800;color:var(--ink)}
 details summary{cursor:pointer;color:var(--blue);font-weight:600}
 .crumbs{font-size:14px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .crumbs button{border:none;background:none;color:var(--blue);font-weight:600;padding:0;text-decoration:underline;text-underline-offset:3px}
@@ -1404,12 +1407,18 @@ let scope="all",front=store.get("front","ru");
 const filled=w=>(w[2]||"").replace(/___( ___)*/,`<b>${w[3].split("|")[0]}</b>`);
 /* words without a Russian translation (B1): picture is the clue; w[1] may hold an English definition */
 const sub=w=>w[1]?` — ${w[1]}`:"";
-const tt=w=>w[0]+sub(w);
+const tt=w=>w[0]+(w[1]?` — <b>${w[1]}</b>`:"");
 const hasEx=w=>!!(w[2]&&w[2].includes("___"));
-const frontEff=()=>M().words.some(w=>!w[1])?"ru":front;
+const frontEff=()=>front;
+const EO=()=>!M().words.some(w=>/[а-яё]/i.test(w[1]||"")); /* English-only module: clues are pictures/definitions */
+const dfn=w=>w[1]?`<div class="${(/[а-яё]/i.test(w[1])||w[1].length<=34)?"ru":"df"}">${w[1]}</div>`:"";
+const optLab=(w,en)=>en?(w[1]||pic(w)):w[0];
+const kindOpts=(i,all,en)=>{const w=all[i],others=shuffle(all.map((_,k)=>k).filter(k=>k!==i));
+  const same=en?others.filter(k=>!!all[k][1]===!!w[1]):others;
+  return shuffle([i,...[...same,...others.filter(k=>!same.includes(k))].slice(0,3)])};
 const noIPA=t=>t.replace(/\s*\/[^\/]*[ˈˌəæɪʊɔɑɜːθðŋʃʒ][^\/]*\//g,"").trim();
-const enFront=w=>`<div class="txt"><div class="ru" lang="en">${w[0]}</div></div><div class="pic">${pic(w)}</div>`;
-const ruBack=w=>`<div class="back2"><div class="ru">${w[1]}</div><div class="ex">${filled(w)}</div></div>`;
+const enFront=w=>EO()?`<div class="back" lang="en" style="font-size:clamp(28px,7vw,48px)">${w[0]}</div>`:`<div class="txt"><div class="ru" lang="en">${w[0]}</div></div><div class="pic">${pic(w)}</div>`;
+const ruBack=w=>EO()?`<div class="back2"><div class="pic">${pic(w)}</div>${dfn(w)}${w[2]?`<div class="ex">${filled(w)}</div>`:""}</div>`:`<div class="back2"><div class="ru">${w[1]}</div><div class="ex">${filled(w)}</div></div>`;
 const weakKey=()=>"weak_"+LIB[fI].name, weak=()=>store.get(weakKey(),[]);
 const knownKey=()=>"known_"+LIB[fI].name, knownL=()=>store.get(knownKey(),[]);
 const setWeak=(t,on)=>{const tk="ts_"+LIB[fI].name,ts=store.get(tk,{});ts[t]=Date.now();store.set(tk,ts);let a=weak().filter(x=>x!==t);if(on)a.push(t);store.set(weakKey(),a);let k=knownL().filter(x=>x!==t);if(!on)k.push(t);store.set(knownKey(),k)};
@@ -1436,7 +1445,7 @@ function prefetchDict(words){if(store.get("useDict",true)===false)return;
 function tts(t){try{const u=new SpeechSynthesisUtterance(noIPA(t).replace(/…|\.\.\./g,""));const v=curVoice();if(v){u.voice=v;u.lang=v.lang}else u.lang="en-US";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 function say(t){const w=dictWord(t);if(w&&DICT[w]&&store.get("useDict",true)!==false){try{speechSynthesis.cancel();const a=new Audio(DICT[w]);a.play().catch(()=>tts(t));return}catch(e){}}tts(t)}
 const stars=()=>store.get(key(),[]); /* stores English terms */
-const prompt=w=>`<div class="txt">${w[1]?`<div class="${w[1].length>34?"ex":"ru"}">${w[1]}</div>`:""}${w[2]?`<div class="ex">${w[2]}</div>`:(w[1]?"":`<div class="ex">What is it?</div>`)}</div><div class="pic">${pic(w)}</div>`;
+const prompt=w=>`<div class="txt">${dfn(w)}${w[2]?`<div class="ex">${w[2]}</div>`:(w[1]?"":`<div class="ex">What is it?</div>`)}</div><div class="pic">${pic(w)}</div>`;
 const crumbs=()=>`<nav class="crumbs"><button data-go="home">All folders</button>${view!=="home"?` › <button data-go="folder">${LIB[fI].name}</button>`:""}${view==="module"?` › <span>${M().name}</span>`:""}</nav>`;
 function bindCrumbs(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{view=b.dataset.go;draw()})}
 
@@ -1511,7 +1520,7 @@ function voiceBar(){const vb=$("voicesel");if(!vb)return;const cv=curVoice();
   if($("vs"))$("vs").onchange=e=>{store.set("voice",e.target.value)};
   $("vtest").onclick=()=>tts("Hello! I'm a morning person. I set an alarm for 7 a.m.");
   $("vd").onchange=e=>{store.set("useDict",e.target.checked);if(e.target.checked&&view==="module")prefetchDict(Wfull())}}
-function frontBar(){voiceBar();const fb=$("frontsel");if(!fb)return;if(M().words.some(w=>!w[1])){fb.innerHTML="";return}fb.innerHTML=`<span class="lbl">Card front:</span><button class="chip ${front==="ru"?"on":""}" data-fr="ru">RU → EN</button><button class="chip ${front==="en"?"on":""}" data-fr="en">EN → RU</button>${mode==="gap"?`<span class="lbl">(Gap fill is always in English)</span>`:""}`;
+function frontBar(){voiceBar();const fb=$("frontsel");if(!fb)return;fb.innerHTML=`<span class="lbl">Card front:</span><button class="chip ${front==="ru"?"on":""}" data-fr="ru">${EO()?"Picture / definition → Word":"RU → EN"}</button><button class="chip ${front==="en"?"on":""}" data-fr="en">${EO()?"Word → Picture / definition":"EN → RU"}</button>${mode==="gap"?`<span class="lbl">(Gap fill is always in English)</span>`:""}`;
   fb.querySelectorAll("[data-fr]").forEach(b=>b.onclick=()=>{front=b.dataset.fr;store.set("front",front);runMode()})}
 function scopeBar(){const n=Wfull().filter(w=>weak().includes(w[0])).length;const sb=$("scope");if(!sb)return;
   sb.innerHTML=`<button class="chip ${scope==="all"?"on":""}" data-sc="all">All words · ${Wfull().length}</button><button class="chip weakchip ${scope==="weak"?"on":""}" data-sc="weak">📌 Still learning · ${n}</button>`;
@@ -1536,7 +1545,7 @@ function cards(){
   const modeSw=`<div class="row bsw"><button class="chip ${browse?"on":""}" data-b="1">👀 Flip through</button><button class="chip ${browse?"":"on"}" data-b="0">✓ ✗ Sort</button></div>`;
   $("panel").innerHTML=modeSw+(browse?`<div class="sort"><span></span><span class="count">${pos+1} / ${order.length}</span><span></span></div>`:`<div class="sort"><span class="u">✗ ${unknown.length}</span><span class="count">${pos+1} / ${order.length}</span><span class="k">✓ ${known.length}</span></div>`)+`
   <button class="card" id="flip" aria-label="Flip the card">${frontEff()==="en"?(flipped?ruBack(w):enFront(w)):(flipped?`<div class="back">${w[0]}</div>`:prompt(w))}</button>
-  <p class="hint">${flipped?"Tap to see the front again":frontEff()==="en"?"Tap the card to see the translation":"Tap the card to see the English word"}</p>
+  <p class="hint">${flipped?"Tap to see the front again":frontEff()==="en"?(EO()?"Tap the card to see the picture and definition":"Tap the card to see the translation"):"Tap the card to see the English word"}</p>
   ${browse?`<div class="nav"><button class="kbtn" id="prev" ${pos?"":"disabled"}>← Back</button><button class="kbtn" id="next">${pos===order.length-1?"Start again ↺":"Next →"}</button></div>`:`<div class="nav"><button class="kbtn u" id="no">✗ Still learning</button><button class="kbtn k" id="yes">✓ I know it</button></div>`}
   <div class="nav">${browse?"":`<button class="round" id="undo" aria-label="Back" ${hist.length?"":"disabled"}>↶</button>`}<button class="round" id="speak" aria-label="Listen">🔊</button><button class="round star ${st.includes(w[0])?"on":""}" id="star" aria-label="Star this word">★</button>
   <button class="btn ghost" id="mix">Shuffle</button><button class="btn ghost" id="onlyst">${onlyStars?"All words":"Only ★ words"}</button></div>`;
@@ -1566,11 +1575,11 @@ function learnStart(){if(!W().length){emptyWeak();return}LW=W().slice();q=shuffl
 function learn(){
   if(!q.length){$("panel").innerHTML=`<div class="done"><b>All learned! 🎉</b><span>You know all ${total} words.</span><button class="btn" id="again">Learn again</button></div>`;$("again").onclick=learnStart;return}
   const i=q[0],w=LW[i];
-  const opts=shuffle([i,...shuffle(LW.map((_,k)=>k).filter(k=>k!==i)).slice(0,3)]);
+  const opts=kindOpts(i,LW,frontEff()==="en"&&EO());
   $("panel").innerHTML=`<div class="bar"><i style="width:${learned/total*100}%"></i></div><p class="hint">${learned} / ${total} learned</p>
   <div class="card" style="cursor:default">${frontEff()==="en"?enFront(w):prompt(w)}</div>
   <div class="nav"><button class="round" id="spk" aria-label="Listen">🔊</button></div>
-  <div class="opts">${opts.map(k=>`<button class="opt" data-k="${k}">${LW[k][frontEff()==="en"?1:0]}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+  <div class="opts">${opts.map(k=>`<button class="opt" data-k="${k}">${frontEff()==="en"?(EO()?optLab(LW[k],true):LW[k][1]):LW[k][0]}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
   $("spk").onclick=()=>say(w[0]);
   document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
     document.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.k===i)x.classList.add("ok")});
@@ -1634,7 +1643,7 @@ function qBuild(w,el,done){
   let picked=[],checked=false,ok=false;
   const render=()=>{
     const full=picked.length===toks.length;
-    el.innerHTML=`<div class="card" style="cursor:default"><div class="txt">${w[1]?`<div class="${w[1].length>34?"ex":"ru"}">${w[1]}</div>`:""}${hint?`<div class="ex">(${hint})</div>`:""}</div><div class="pic">${pic(w)}</div></div>
+    el.innerHTML=`<div class="card" style="cursor:default"><div class="txt">${dfn(w)}${hint?`<div class="ex">(${hint})</div>`:""}</div><div class="pic">${pic(w)}</div></div>
     <p class="hint">${checked?"":"Tap the words in the right order. Tap a word again to take it back."}</p>
     <div class="bline ${checked?(ok?"ok":"bad"):""}">${picked.map((k,j)=>`<button class="tok" data-j="${j}" ${checked?"disabled":""}>${toks[k]}</button>`).join("")||`<span class="bph">your sentence</span>`}</div>
     ${checked?(ok?`<div class="fb ok">Correct! ✨</div>`:`<div class="fb bad">Correct sentence:<div class="full"><span class="ex">${s}</span></div></div>`):`<div class="bpool">${pool.map(k=>picked.includes(k)?`<span class="tok gone">${toks[k]}</span>`:`<button class="tok" data-p="${k}">${toks[k]}</button>`).join("")}</div>`}
@@ -1647,8 +1656,8 @@ function qBuild(w,el,done){
     $("bskip").onclick=()=>{picked=toks.map((_,i)=>i);ok=false;checked=true;markW(w,false);render()};
   };render()}
 function qChoice(w,el,done){
-  const en=frontEff()==="en"&&Math.random()<.5,opts=shuffle([w,...shuffle(SW.filter(x=>x!==w)).slice(0,3)]);
-  el.innerHTML=`<div class="card" style="cursor:default">${en?enFront(w):prompt(w)}</div><p class="hint">${en?"Choose the translation":"Choose the English word"}</p><div class="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${o[en?1:0]}</button>`).join("")}</div><div class="fb" id="cfb"></div>`;
+  const en=frontEff()==="en"&&Math.random()<.5,opts=kindOpts(SW.indexOf(w),SW,en&&EO()).map(k=>SW[k]);
+  el.innerHTML=`<div class="card" style="cursor:default">${en?enFront(w):prompt(w)}</div><p class="hint">${en?(EO()?"Choose the matching definition or picture":"Choose the translation"):"Choose the English word"}</p><div class="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${en&&EO()?optLab(o,true):o[en?1:0]}</button>`).join("")}</div><div class="fb" id="cfb"></div>`;
   el.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{const ok=opts[+b.dataset.k]===w;
     el.querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(opts[+x.dataset.k]===w)x.classList.add("ok")});if(!ok)b.classList.add("bad");
     markW(w,ok);$("cfb").className="fb "+(ok?"ok":"bad");$("cfb").textContent=ok?"Correct! ✨":"Not quite.";setTimeout(()=>done(ok),ok?800:1700)})}
