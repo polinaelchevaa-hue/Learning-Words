@@ -37,11 +37,14 @@ Folders → modules → words. A word is
   Folder 5 "2A. Money" (Irina): module 1. Money (34: 25 words with her definitions/examples + 9 preposition/collocation cards like "pay by"; emoji pictures;
   gaps with suffixes were reworded, e.g. "saving", "cost" has one gap).
   Folder 6 "2B. Changing lives" (Irina): module 2. Strong adjectives (12, emoji pictures); module 1. Charity (7 cards; "alongside" is 3 cards with 3 meanings, named alongside (1)/(2)/(3)).
-  Folder 7 "3A. On the road" (Irina; name kept as she wrote it, may be a typo for 2C): module 1. Transport (43 cards, 33 with her photos, lilac frame cropped; phrasal verbs and "on foot" use emoji;
+  Folder 7 "3A. On the road" (Irina): module 1. Transport (43 cards, 33 with her photos, lilac frame cropped; phrasal verbs and "on foot" use emoji;
   multi-gap examples reworded to one gap, e.g. "pick me up").
   Folder 8 "3B. Stereotypes" (Irina): module 1. Generalizing language (9 cards made by Claude from lesson screenshots: 5 pink phrases + show/discover/argue/turn out; Claude-written definitions/examples; emoji pictures).
   Folder 1 "Food" (B1) was written by Claude from lessons,
   not from her Quizlet yet.
+
+## Pictures
+Polina likes the emoji pictures and does NOT want them replaced with photos (unless she says otherwise). Do not ask her for more photos.
 
 ## Words without translation (B1)
 If field 1 (Russian) is empty the card shows the picture + "What is it?"; Match pairs word↔picture; Build skips
