@@ -36,7 +36,7 @@ Folders → modules → words. A word is
   from her lesson screenshots (9 reactions + 8 highlighted Social English phrases), Claude-written definitions/examples, emoji pictures.
   Folder 5 "2A. Money" (Irina): module 1. Money (34: 25 words with her definitions/examples + 9 preposition/collocation cards like "pay by"; emoji pictures;
   gaps with suffixes were reworded, e.g. "saving", "cost" has one gap).
-  Folder 6 "2B. Changing lives" (Irina): module 1. Charity (7 cards; "alongside" is 3 cards with 3 meanings, named alongside (1)/(2)/(3)).
+  Folder 6 "2B. Changing lives" (Irina): module 2. Strong adjectives (12, emoji pictures); module 1. Charity (7 cards; "alongside" is 3 cards with 3 meanings, named alongside (1)/(2)/(3)).
   Folder 1 "Food" (B1) was written by Claude from lessons,
   not from her Quizlet yet.
 
