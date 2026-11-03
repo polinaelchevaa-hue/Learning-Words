@@ -14,6 +14,8 @@ Talk to her in Russian. She is not a developer: explain in plain words, no code 
 - `#b1-m4x9` — B1 group (American English File Intermediate): Olga, Rita, Mary → folder 1 "Food".
 - `#teacher-7nq4` — teacher. Opening it once remembers the teacher in that browser; then the bare
   site URL shows the "My groups" dashboard (groups, students, Copy link buttons).
+- `#irina-r5w8` — individual student Irina (group "Irina") → folder 2 "1A. Eating in and out"
+  (she is a bit ahead of the program; her materials can later be opened to other groups via `folders`).
 - Without a code students see "Please open the link your teacher sent you".
 - Individual students: add an entry to `GROUPS` with its own code, `name`, `icon`, `students`, `folders`.
 
@@ -26,7 +28,8 @@ Folders → modules → words. A word is
   and strips a leading a/an/the, so "she's" = "she is", "a doctor" = "doctor".
 - Her Quizlet exports: term<TAB>definition, then the example on the next line.
 - Folder 0 modules: 1. Meet & Greet (34, her Quizlet), 2. My routine (25, her Quizlet + 16 photos),
-  3. Jobs (30, her Quizlet + 28 photos). Folder 1 "Food" (B1) was written by Claude from lessons,
+  3. Jobs (30, her Quizlet + 28 photos). Folder 2 "1A. Eating in and out" (Irina): module 1. Food (44 words, her Quizlet + 36 photos; pear and plum have emoji);
+  module 2. Cooking is still to come. Folder 1 "Food" (B1) was written by Claude from lessons,
   not from her Quizlet yet.
 
 ## Modes
