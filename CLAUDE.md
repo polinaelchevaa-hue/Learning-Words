@@ -30,7 +30,7 @@ Folders → modules → words. A word is
 - Folder 0 modules: 1. Meet & Greet (34, her Quizlet), 2. My routine (25, her Quizlet + 16 photos),
   3. Jobs (30, her Quizlet + 28 photos). Folder 2 "1A. Eating in and out" (Irina): module 1. Food (44 words, her Quizlet + 38 photos, NO Russian translations — B1 level, picture is the clue;
   field 1 may hold her English definition, field 2 only her own examples; cottage cheese / cream cheese / yummy / gross still use emoji);
-  module 2. Cooking (25 words, her Quizlet + 16 photos, same picture-only style; recipe, eat out, cut down on, cut out, pig out, dig in use emoji). Folder 1 "Food" (B1) was written by Claude from lessons,
+  module 2. Cooking (25 words, her Quizlet + 16 photos, same picture-only style, plus Claude-written examples for the 12 cooking verbs; recipe, eat out, cut down on, cut out, pig out, dig in use emoji). Folder 1 "Food" (B1) was written by Claude from lessons,
   not from her Quizlet yet.
 
 ## Words without translation (B1)
