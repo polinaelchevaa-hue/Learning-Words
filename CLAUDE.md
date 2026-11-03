@@ -44,7 +44,8 @@ Folders → modules → words. A word is
   not from her Quizlet yet.
 
 ## Pictures
-Polina likes the emoji pictures and does NOT want them replaced with photos (unless she says otherwise). Do not ask her for more photos.
+Polina likes the emoji pictures. She will send photos only for some words/modules herself; for the rest emoji stay.
+Do not ask her for more photos and do not replace emoji unless she sends pictures.
 
 ## Words without translation (B1)
 If field 1 (Russian) is empty the card shows the picture + "What is it?"; Match pairs word↔picture; Build skips
