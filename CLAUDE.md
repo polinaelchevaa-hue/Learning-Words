@@ -17,6 +17,7 @@ Talk to her in Russian. She is not a developer: explain in plain words, no code 
 - `#irina-r5w8` — individual student Irina (group "Irina") → folders 2 "1A. Eating in and out" 3 "1B. Family & Personality" 4 "E1. Practical English – Meeting the parents" 5 "2A. Money" 6 "2B. Changing lives" 7 "3A. On the road" and 8 "3B. Stereotypes"
   (she is a bit ahead of the program; her materials can later be opened to other groups via `folders`).
 - `#vasilisa-t3k6` — individual student Vasilisa (group "Vasilisa") → folders 2, 3, 4, 5 (same as Irina but without 2B, 3A, 3B).
+- `#azalia-j8d5` — individual student Azalia (group "Azalia") → folders 2, 3, 4, 5 (same as Vasilisa).
 - Without a code students see "Please open the link your teacher sent you".
 - Individual students: add an entry to `GROUPS` with its own code, `name`, `icon`, `students`, `folders`.
 
