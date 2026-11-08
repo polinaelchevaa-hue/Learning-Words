@@ -448,7 +448,7 @@ const LIB=[
 "group": "A1"
 },
 {
-"name": "Food",
+"name": "1A. Eating in and out",
 "icon": "🍓",
 "group": "B1",
 "modules": [
@@ -2977,10 +2977,13 @@ let syncState="",syncT=null,pulledAt=0,pushing=false;
 const SYNCMSG=()=>({ok:"☁️ saved",busy:"☁️ saving…",off:"⚠️ offline — saved on this device"})[syncState]||"";
 const setSync=st=>{syncState=st;const el=$("syncst");if(el)el.textContent=SYNCMSG()};
 const syncWho=()=>{const n=store.get("myname","");return SYNC_URL&&GROUPS[CODE]&&n?{g:CODE,n}:null};
+/* folder "Food" was renamed: carry old progress over (local + cloud) */
+const FALIAS={"Food":"1A. Eating in and out"};
+["known_","weak_","ts_","stars_","tests_"].forEach(p=>{try{const old=localStorage.getItem(p+"Food");if(old!==null&&localStorage.getItem(p+FALIAS.Food)===null)localStorage.setItem(p+FALIAS.Food,old)}catch(e){}});
 function localData(){const f={};LIB.forEach(F=>{const o={k:store.get("known_"+F.name,[]),w:store.get("weak_"+F.name,[]),ts:store.get("ts_"+F.name,{}),s:store.get("stars_"+F.name,[]),t:store.get("tests_"+F.name,{})};
   if(o.k.length||o.w.length||o.s.length||Object.keys(o.t).length)f[F.name]=o});return{v:2,name:store.get("myname",""),f}}
 function mergeRemote(r){if(!r||!r.f)return false;let ch=false;if(r.name&&r.name.trim().toLowerCase()===store.get("myname","").trim().toLowerCase())localStorage.setItem("myname",JSON.stringify(r.name));
-  Object.entries(r.f).forEach(([fn,o])=>{const k0=store.get("known_"+fn,[]),w0=store.get("weak_"+fn,[]),t0=store.get("ts_"+fn,{});
+  Object.entries(r.f).forEach(([fn0,o])=>{const fn=FALIAS[fn0]||fn0;const k0=store.get("known_"+fn,[]),w0=store.get("weak_"+fn,[]),t0=store.get("ts_"+fn,{});
     const st=(k,w,t)=>k.includes(t)?"k":w.includes(t)?"w":"";
     const terms=new Set([...k0,...w0,...(o.k||[]),...(o.w||[])]);const K=[],Wk=[],TS={...t0};
     terms.forEach(t=>{const lt=t0[t]||0,rt=(o.ts||{})[t]||0;let v=st(k0,w0,t);

@@ -11,7 +11,7 @@ Talk to her in Russian. She is not a developer: explain in plain words, no code 
 
 ## Access links (hash codes, see `GROUPS` / `TEACHER` in index.html)
 - `#a1-k7p2` — A1 group (Speakout A2): Kate, Marta, Dasha, Ann → folder 0 "1A. Meeting people".
-- `#b1-m4x9` — B1 group (American English File Intermediate): Olga, Rita, Mary → folders 1 "Food" and 9 "1B. Family & Personality" (only module 1. Family; folder 9 is built by `LIB.push` from folder 3's first module, so edits to Family apply to both).
+- `#b1-m4x9` — B1 group (American English File Intermediate): Olga, Rita, Mary → folders 1 "1A. Eating in and out" (renamed from "Food"; old progress is carried over by `FALIAS`) and 9 "1B. Family & Personality" (only module 1. Family; folder 9 is built by `LIB.push` from folder 3's first module, so edits to Family apply to both).
 - `#teacher-7nq4` — teacher. Opening it once remembers the teacher in that browser; then the bare
   site URL shows the "My groups" dashboard (groups, students, Copy link buttons).
 - `#irina-r5w8` — individual student Irina (group "Irina") → folders 2 "1A. Eating in and out" 3 "1B. Family & Personality" 4 "E1. Practical English – Meeting the parents" 5 "2A. Money" 6 "2B. Changing lives" 7 "3A. On the road" and 8 "3B. Stereotypes"
@@ -42,7 +42,7 @@ Folders → modules → words. A word is
   Folder 7 "3A. On the road" (Irina): module 1. Transport (43 cards, 33 with her photos, lilac frame cropped; phrasal verbs and "on foot" use emoji;
   multi-gap examples reworded to one gap, e.g. "pick me up").
   Folder 8 "3B. Stereotypes" (Irina): module 1. Generalizing language (9 cards made by Claude from lesson screenshots: 5 pink phrases + show/discover/argue/turn out; Claude-written definitions/examples; emoji pictures).
-  Folder 1 "Food" (B1) was written by Claude from lessons,
+  Folder 1 (B1 group, now also named "1A. Eating in and out", same name as folder 2) was written by Claude from lessons,
   not from her Quizlet yet.
 
 ## Pictures
