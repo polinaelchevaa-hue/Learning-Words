@@ -11,7 +11,8 @@ Talk to her in Russian. She is not a developer: explain in plain words, no code 
 
 ## Access links (hash codes, see `GROUPS` / `TEACHER` in index.html)
 - `#a1-k7p2` — A1 group (Speakout A2): Kate, Marta, Dasha, Ann → folder 0 "1A. Meeting people".
-- `#b1-m4x9` — B1 group (American English File Intermediate): Olga, Rita, Mary → folders 1 "1A. Eating in and out" (renamed from "Food"; old progress is carried over by `FALIAS`) and 9 "1B. Family & Personality" (only module 1. Family; folder 9 is built by `LIB.push` from folder 3's first module, so edits to Family apply to both).
+- `#b1-m4x9` — B1 group (American English File Intermediate): Olga, Rita, Mary → folders 2 "1A. Eating in and out" (same folder as Irina: Food + Cooking) and 9 "1B. Family & Personality" (only module 1. Family; folder 9 is built by `LIB.push` from folder 3's first module, so edits to Family apply to both).
+  Old folder 1 (Claude-written "Food", 3 modules, 46 words) is no longer used by any group but is kept in LIB; `FALIAS` carries old "Food" progress to the new name.
 - `#teacher-7nq4` — teacher. Opening it once remembers the teacher in that browser; then the bare
   site URL shows the "My groups" dashboard (groups, students, Copy link buttons).
 - `#irina-r5w8` — individual student Irina (group "Irina") → folders 2 "1A. Eating in and out" 3 "1B. Family & Personality" 4 "E1. Practical English – Meeting the parents" 5 "2A. Money" 6 "2B. Changing lives" 7 "3A. On the road" and 8 "3B. Stereotypes"
