@@ -42,7 +42,8 @@ Folders → modules → words. A word is
   Folder 6 "2B. Changing lives" (Irina): module 2. Strong adjectives (12, emoji pictures); module 1. Charity (7 cards; "alongside" is 3 cards with 3 meanings, named alongside (1)/(2)/(3)).
   Folder 7 "3A. On the road" (Irina): module 1. Transport (43 cards, 33 with her photos, lilac frame cropped; phrasal verbs and "on foot" use emoji;
   multi-gap examples reworded to one gap, e.g. "pick me up").
-  Folder 8 "3B. Stereotypes" (Irina): module 1. Generalizing language (9 cards made by Claude from lesson screenshots: 5 pink phrases + show/discover/argue/turn out; Claude-written definitions/examples; emoji pictures).
+  Folder 8 "3B. Stereotypes" (Irina): module 1. Generalizing language (9 cards made by Claude from lesson screenshots: 5 pink phrases + show/discover/argue/turn out; Claude-written definitions/examples; emoji pictures);
+  module 2. Dependent prepositions (31 cards from her screenshots: 13 verbs + 18 adjectives; Russian translations as she asked).
   Folder 1 (B1 group, now also named "1A. Eating in and out", same name as folder 2) was written by Claude from lessons,
   not from her Quizlet yet.
 
@@ -54,6 +55,11 @@ Do not ask her for more photos and do not replace emoji unless she sends picture
 If field 1 (Russian) is empty the card shows the picture + "What is it?"; Match pairs word↔picture; Build skips
 words without an example; the RU/EN front switch is hidden in such modules. Transcription like `/læm/` in the
 English field is ignored by the voice (`noIPA`). Polina does NOT want Russian translations for B1 students.
+
+## Dependent-preposition cards
+A word with 7 fields `[phrase, Russian, example, answers, emoji, phrase with ___, answer label]` is a "dependent preposition" card:
+front = phrase with ___ (w[5]), back = preposition (w[6]) + Russian + italic example. Modules with such cards show only
+Learn, Flashcards, Gap fill and Test (Match/Build/Spell hidden); options are prepositions; typed "to for" / "to / for" both count (`depNorm`).
 
 ## Styling rule
 Definitions (and Russian translations) are always bold; examples are always italic.
