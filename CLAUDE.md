@@ -87,6 +87,7 @@ words) · Spell it (letters in order, ≤16 letters) · Test (12 mixed: choice, 
   were removed because sync replaced it.
 
 ## Design
+Cards are a centered column on every screen size (picture on top, words centered under it).
 Palette Espresso `#3e2723`, Petal `#f4c9d6`, Ivory `#f5f0e6`; font Poppins. Header text:
 "Choose a folder and a module. Study the words!" Watch out: `.tile` and `.done b` are existing styles —
 new elements must not reuse those class names.
