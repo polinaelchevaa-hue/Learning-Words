@@ -43,7 +43,7 @@ Folders → modules → words. A word is
   Folder 7 "3A. On the road" (Irina): module 1. Transport (43 cards, 33 with her photos, lilac frame cropped; phrasal verbs and "on foot" use emoji;
   multi-gap examples reworded to one gap, e.g. "pick me up").
   Folder 8 "3B. Stereotypes" (Irina): module 1. Generalizing language (9 cards made by Claude from lesson screenshots: 5 pink phrases + show/discover/argue/turn out; Claude-written definitions/examples; emoji pictures);
-  module 2. Dependent prepositions (31 cards from her screenshots: 13 verbs + 18 adjectives; Russian translations as she asked).
+  module 2. Dependent prepositions (33 cards: 13 verbs + 18 adjectives from her screenshots + arrive in / arrive at with Claude-written difference and examples; Russian translations as she asked).
   Folder 1 (B1 group, now also named "1A. Eating in and out", same name as folder 2) was written by Claude from lessons,
   not from her Quizlet yet.
 
