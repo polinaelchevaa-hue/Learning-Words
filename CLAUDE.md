@@ -20,6 +20,7 @@ Talk to her in Russian. She is not a developer: explain in plain words, no code 
 - `#vasilisa-t3k6` — individual student Vasilisa (group "Vasilisa") → folders 2, 3, 4, 5 (same as Irina but without 2B, 3A, 3B).
 - `#azalia-j8d5` — individual student Azalia (group "Azalia") → folders 2, 3, 4, 5 (same as Vasilisa).
 - `#anita-h6c3` — individual student Anita (group "Anita") → folders 2, 9 (same as the B1 group: 1A. Eating in and out + 1B. Family & Personality with only module 1. Family).
+- `#paul-w2n9` — individual student Paul (group "Paul") → folder 10 "1A. Personality" (module 1. Positive traits, 15 words with her English definitions + Russian in brackets + her examples; folder 10 is added by a second `LIB.push` after the LIB literal).
 - Without a code students see "Please open the link your teacher sent you".
 - Individual students: add an entry to `GROUPS` with its own code, `name`, `icon`, `students`, `folders`.
 

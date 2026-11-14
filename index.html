@@ -2863,8 +2863,126 @@ const LIB=[
 ];
 /* folder 9: same name as folder 3, but only module 1 (Family) — for the B1 group */
 LIB.push({name:LIB[3].name,icon:LIB[3].icon,modules:[LIB[3].modules[0]]});
+/* folder 10: 1A. Personality (Paul) */
+LIB.push({
+"name": "1A. Personality",
+"icon": "📁",
+"modules": [
+{
+"name": "1. Positive traits",
+"icon": "🌟",
+"words": [
+[
+"callous",
+"emotionally insensitive; not caring about others' feelings or suffering (бессердечный, черствый)",
+"It was ___ of him to laugh when someone got hurt.",
+"callous",
+"🧊"
+],
+[
+"charismatic",
+"having a strong charm or appeal that attracts and influences others (харизматичный)",
+"The ___ speaker easily inspired the audience.",
+"charismatic",
+"🌟"
+],
+[
+"controlling",
+"trying to dominate or direct other people's behavior excessively (контролирующий, властный)",
+"Her ___ behavior made her friends feel uncomfortable.",
+"controlling",
+"🎮"
+],
+[
+"ruthless",
+"showing no pity or compassion; willing to harm others to achieve goals (безжалостный, беспощадный)",
+"The ___ manager fired employees without any sympathy.",
+"ruthless",
+"⚔️"
+],
+[
+"reckless",
+"acting without thinking about the possible dangers or consequences (безрассудный, опрометчивый)",
+"His ___ decision to jump from the cliff shocked everyone.",
+"reckless",
+"🎢"
+],
+[
+"cynical",
+"believing that people are mainly motivated by selfishness; distrustful of sincerity (циничный)",
+"After years in politics, he became ___ about people's intentions.",
+"cynical",
+"🙄"
+],
+[
+"self-centred",
+"thinking mainly about yourself and your own needs (эгоцентричный, сосредоточенный на себе)",
+"She was so ___ that she never asked how others felt.",
+"self-centred|self-centered|self centred|self centered",
+"🪞"
+],
+[
+"entitled",
+"believing you deserve special treatment or privileges (самоуверенный в своих правах, считающий себя заслуживающим особого отношения)",
+"He sounded ___ when he demanded special treatment.",
+"entitled",
+"👑"
+],
+[
+"manipulative",
+"trying to control or influence others in a clever but unfair way (манипулятивный)",
+"She was very ___ and often used guilt to control people.",
+"manipulative",
+"🪢"
+],
+[
+"aggressive",
+"ready to attack or confront others; behaving in a forceful or hostile way (агрессивный)",
+"The dog became ___ when someone came too close.",
+"aggressive",
+"😠"
+],
+[
+"arrogant",
+"having an exaggerated sense of your own importance or abilities (высокомерный, надменный)",
+"His ___ attitude annoyed everyone at the meeting.",
+"arrogant",
+"😏"
+],
+[
+"remorseless",
+"showing no regret or guilt for doing something wrong (без раскаяния, бессовестный)",
+"The criminal seemed completely ___ after the crime.",
+"remorseless",
+"😶"
+],
+[
+"hostile",
+"showing anger, opposition, or a desire to harm (враждебный)",
+"The crowd became ___ after hearing the news.",
+"hostile",
+"🚫"
+],
+[
+"insensitive",
+"not aware of or not caring about other people's feelings (нечуткий, бесчувственный)",
+"It was ___ to joke about such a serious problem.",
+"insensitive",
+"💔"
+],
+[
+"deceitful",
+"dishonest; willing to lie or trick people (лживый, обманчивый)",
+"The ___ businessman hid the truth from his clients.",
+"deceitful",
+"🤥"
+]
+]
+}
+]
+});
 /* ===== GROUPS: link code → which folders this group sees ===== */
-const GROUPS={"a1-k7p2": {"name": "A1 group", "icon": "🌱", "students": ["Kate", "Marta", "Dasha", "Ann"], "folders": [0]}, "b1-m4x9": {"name": "B1 group", "icon": "🍝", "students": ["Olga", "Rita", "Mary"], "folders": [2, 9]}, "irina-r5w8": {"name": "Irina", "icon": "🍽️", "students": ["Irina"], "folders": [2, 3, 4, 5, 6, 7, 8]}, "vasilisa-t3k6": {"name": "Vasilisa", "icon": "🌸", "students": ["Vasilisa"], "folders": [2, 3, 4, 5]}, "azalia-j8d5": {"name": "Azalia", "icon": "🌷", "students": ["Azalia"], "folders": [2, 3, 4, 5]}, "anita-h6c3": {"name": "Anita", "icon": "🌼", "students": ["Anita"], "folders": [2, 9]}};
+const GROUPS={"a1-k7p2": {"name": "A1 group", "icon": "🌱", "students": ["Kate", "Marta", "Dasha", "Ann"], "folders": [0]}, "b1-m4x9": {"name": "B1 group", "icon": "🍝", "students": ["Olga", "Rita", "Mary"], "folders": [2, 9]}, "irina-r5w8": {"name": "Irina", "icon": "🍽️", "students": ["Irina"], "folders": [2, 3, 4, 5, 6, 7, 8]}, "vasilisa-t3k6": {"name": "Vasilisa", "icon": "🌸", "students": ["Vasilisa"], "folders": [2, 3, 4, 5]}, "azalia-j8d5": {"name": "Azalia", "icon": "🌷", "students": ["Azalia"], "folders": [2, 3, 4, 5]}, "anita-h6c3": {"name": "Anita", "icon": "🌼", "students": ["Anita"], "folders": [2, 9]}, "paul-w2n9": {"name": "Paul", "icon": "🎯", "students": ["Paul"], "folders": [10]}};
 const TEACHER="teacher-7nq4";
 /* ===== app ===== */
 const $=id=>document.getElementById(id);
