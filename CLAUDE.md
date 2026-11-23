@@ -10,7 +10,7 @@ Talk to her in Russian. She is not a developer: explain in plain words, no code 
 - Test with Playwright (Chromium is preinstalled) at phone width 390px before pushing; check `pageerror`.
 
 ## Access links (hash codes, see `GROUPS` / `TEACHER` in index.html)
-- `#a1-k7p2` — A1 group (Speakout A2): Kate, Marta, Dasha, Ann → folder 0 "1A. Meeting people" and folder 12 "Practical English – Checking in" (standalone: folder with one module of the same name, 18 phrases with Claude-written Russian translations and examples, emoji pictures; added by `LIB.push`).
+- `#a1-k7p2` — A1 group (Speakout A2): Kate, Marta, Dasha, Ann → folder 0 "1A. Meeting people", folder 12 "Practical English – Checking in" (standalone: folder with one module of the same name, 18 phrases with Claude-written Russian translations and examples, emoji pictures; added by `LIB.push`) and folder 13 "2A. Your desk and you" (module 1. Things: 39 objects with Russian translations, single-gap examples, emoji; added by `LIB.push`).
 - `#b1-m4x9` — B1 group (American English File Intermediate): Olga, Rita, Mary → folders 2 "1A. Eating in and out" (same folder as Irina: Food + Cooking) and 9 "1B. Family & Personality" (only module 1. Family; folder 9 is built by `LIB.push` from folder 3's first module, so edits to Family apply to both).
   Old folder 1 (Claude-written "Food", 3 modules, 46 words) is no longer used by any group but is kept in LIB; `FALIAS` carries old "Food" progress to the new name.
 - `#teacher-7nq4` — teacher. Opening it once remembers the teacher in that browser; then the bare
